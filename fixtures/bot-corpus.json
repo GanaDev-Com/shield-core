@@ -1,0 +1,195 @@
+{
+    "description": "Anonymized corpus derived from bot_attacks_logs (URI-based entries). Crawler UA reasons are summarized in crawlers.",
+    "source": "bot_attacks_logs(2).csv",
+    "total_log_rows": 7197,
+    "crawlers": {
+        "Crawler - OpenAI": 1020,
+        "request_uri: Images folder - prevent PHP files from executing": 56,
+        "Bad Bot/UserAgent detected and blocked.": 1634,
+        "Crawler - ClaudeBot": 2006,
+        "Crawler - GPTBot": 7,
+        "Crawler - Bytespider": 106,
+        "Suspicious User-Agent detected": 898,
+        "Found User-Agent associated with DotBot": 103,
+        "WP core - encoded path traversal via pagename": 1,
+        "Found User-Agent associated with Ahrefs Bot": 411,
+        "Found User-Agent associated with scripting/generic HTTP client": 76,
+        "Found User-Agent associated with security scanner": 4,
+        "Crawler - ChatGPT": 679,
+        "request_uri: .ENV Files": 47,
+        "Wordpress - xmlrpc.php human try access": 22,
+        "Crawler - CCBot": 5,
+        "Crawler - mj12bot": 111,
+        "request_uri: AWS Credentials": 1,
+        "Wordpress - Referer missing": 3,
+        "request_uri: .git config": 2,
+        "request_uri: hidden .php execute": 1,
+        "Block *.env": 1,
+        "Wordpress Plugin Litespeed Cache - Privilege Escalation": 1,
+        "Found User-Agent zgrab": 2
+    },
+    "entries": [
+        {
+            "uri": "/images/images/images/cache.php",
+            "method": "GET",
+            "expected": "block",
+            "category": "request_uri: Images folder - prevent PHP files from executing"
+        },
+        {
+            "uri": "/images/images/images/images/cache.php",
+            "method": "GET",
+            "expected": "block",
+            "category": "request_uri: Images folder - prevent PHP files from executing"
+        },
+        {
+            "uri": "/images/images/images/images/images/cache.php",
+            "method": "GET",
+            "expected": "block",
+            "category": "request_uri: Images folder - prevent PHP files from executing"
+        },
+        {
+            "uri": "/images/images/images/images/images/images/cache.php",
+            "method": "GET",
+            "expected": "block",
+            "category": "request_uri: Images folder - prevent PHP files from executing"
+        },
+        {
+            "uri": "/images/images/images/images/images/images/images/cache.php",
+            "method": "GET",
+            "expected": "block",
+            "category": "request_uri: Images folder - prevent PHP files from executing"
+        },
+        {
+            "uri": "/images/images/images/images/images/images/images/images/cache.php",
+            "method": "GET",
+            "expected": "block",
+            "category": "request_uri: Images folder - prevent PHP files from executing"
+        },
+        {
+            "uri": "/images/images/about.php",
+            "method": "GET",
+            "expected": "block",
+            "category": "request_uri: Images folder - prevent PHP files from executing"
+        },
+        {
+            "uri": "/images/images/cache.php",
+            "method": "GET",
+            "expected": "block",
+            "category": "request_uri: Images folder - prevent PHP files from executing"
+        },
+        {
+            "uri": "/admin/images/config.php",
+            "method": "GET",
+            "expected": "block",
+            "category": "request_uri: Images folder - prevent PHP files from executing"
+        },
+        {
+            "uri": "/.env.dist",
+            "method": "GET",
+            "expected": "block",
+            "category": "request_uri: .ENV Files"
+        },
+        {
+            "uri": "/ikiwiki/.env",
+            "method": "GET",
+            "expected": "block",
+            "category": "request_uri: .ENV Files"
+        },
+        {
+            "uri": "/web-app/.env",
+            "method": "GET",
+            "expected": "block",
+            "category": "request_uri: .ENV Files"
+        },
+        {
+            "uri": "/api/.env",
+            "method": "GET",
+            "expected": "block",
+            "category": "request_uri: .ENV Files"
+        },
+        {
+            "uri": "/admin/.env",
+            "method": "GET",
+            "expected": "block",
+            "category": "request_uri: .ENV Files"
+        },
+        {
+            "uri": "/.env.local",
+            "method": "GET",
+            "expected": "block",
+            "category": "request_uri: .ENV Files"
+        },
+        {
+            "uri": "/.env.production",
+            "method": "GET",
+            "expected": "block",
+            "category": "request_uri: .ENV Files"
+        },
+        {
+            "uri": "/production/.env",
+            "method": "GET",
+            "expected": "block",
+            "category": "request_uri: .ENV Files"
+        },
+        {
+            "uri": "/preview/.env",
+            "method": "GET",
+            "expected": "block",
+            "category": "request_uri: .ENV Files"
+        },
+        {
+            "uri": "/travis/.env",
+            "method": "GET",
+            "expected": "block",
+            "category": "request_uri: .ENV Files"
+        },
+        {
+            "uri": "/xmlrpc.php",
+            "method": "GET",
+            "expected": "block",
+            "category": "Wordpress - xmlrpc.php human try access"
+        },
+        {
+            "uri": "/.aws/credentials",
+            "method": "GET",
+            "expected": "block",
+            "category": "request_uri: AWS Credentials"
+        },
+        {
+            "uri": "/wp-comments-post.php",
+            "method": "GET",
+            "expected": "allow",
+            "category": "Wordpress - Referer missing"
+        },
+        {
+            "uri": "/.git/config",
+            "method": "GET",
+            "expected": "block",
+            "category": "request_uri: .git config"
+        },
+        {
+            "uri": "/html/.git/config",
+            "method": "GET",
+            "expected": "block",
+            "category": "request_uri: .git config"
+        },
+        {
+            "uri": "/.freepbx-known/config.php",
+            "method": "GET",
+            "expected": "block",
+            "category": "request_uri: hidden .php execute"
+        },
+        {
+            "uri": "/config/mailer/smtp_config.env",
+            "method": "GET",
+            "expected": "block",
+            "category": "Block *.env"
+        },
+        {
+            "uri": "/wp-content/debug.log",
+            "method": "GET",
+            "expected": "block",
+            "category": "Wordpress Plugin Litespeed Cache - Privilege Escalation"
+        }
+    ]
+}

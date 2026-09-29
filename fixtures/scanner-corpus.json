@@ -1,0 +1,156 @@
+{
+    "description": "Anonymized scanner/offensive request corpus. Each scenario is a sequence of requests and an expected outcome. Never point this at external systems.",
+    "scenarios": [
+        {
+            "id": "sc-001",
+            "name": "100 normal page requests",
+            "expected": "allow",
+            "note": "Legitimate traffic must never be banned or challenged.",
+            "requests": [
+                { "uri": "/home", "method": "GET" },
+                { "uri": "/home?p=1", "method": "GET" },
+                { "uri": "/home?p=2", "method": "GET" },
+                { "uri": "/home?p=3", "method": "GET" },
+                { "uri": "/home?p=4", "method": "GET" },
+                { "uri": "/home?p=5", "method": "GET" },
+                { "uri": "/home?p=6", "method": "GET" },
+                { "uri": "/home?p=7", "method": "GET" },
+                { "uri": "/home?p=8", "method": "GET" },
+                { "uri": "/home?p=9", "method": "GET" }
+            ]
+        },
+        {
+            "id": "sc-002",
+            "name": ".env probe",
+            "expected": "block",
+            "note": "Sensitive file probing must be blocked immediately.",
+            "requests": [
+                { "uri": "/.env", "method": "GET" }
+            ]
+        },
+        {
+            "id": "sc-003",
+            "name": "encoded .git/config probe",
+            "expected": "block",
+            "note": "Encoded variants of critical paths must be detected.",
+            "requests": [
+                { "uri": "/%2e%2e/.git/config", "method": "GET" }
+            ]
+        },
+        {
+            "id": "sc-004",
+            "name": "double encoded traversal",
+            "expected": "block",
+            "note": "Double encoded traversal to /etc/passwd must be detected at decode depth 2.",
+            "requests": [
+                { "uri": "/%252e%252e/%252e%252e/etc/passwd", "method": "GET" }
+            ]
+        },
+        {
+            "id": "sc-005",
+            "name": "RCE probe via query string",
+            "expected": "block",
+            "note": "php://input in the query string is a critical RCE probe.",
+            "requests": [
+                { "uri": "/cgi-bin/php?file=php://input", "method": "GET" }
+            ]
+        },
+        {
+            "id": "sc-006",
+            "name": "aws credentials probing",
+            "expected": "block",
+            "note": "Credential probing for AWS must block.",
+            "requests": [
+                { "uri": "/?file=/root/.aws/credentials", "method": "GET" }
+            ]
+        },
+        {
+            "id": "sc-007",
+            "name": "burst of unique random 404s",
+            "expected": "challenge",
+            "simulate_404": true,
+            "note": "30 unique random paths within the window must raise the behavior score into the challenge band.",
+            "requests": [
+                { "uri": "/zz-a1", "method": "GET" },
+                { "uri": "/zz-a2", "method": "GET" },
+                { "uri": "/zz-a3", "method": "GET" },
+                { "uri": "/zz-a4", "method": "GET" },
+                { "uri": "/zz-a5", "method": "GET" },
+                { "uri": "/zz-a6", "method": "GET" },
+                { "uri": "/zz-a7", "method": "GET" },
+                { "uri": "/zz-a8", "method": "GET" },
+                { "uri": "/zz-a9", "method": "GET" },
+                { "uri": "/zz-a10", "method": "GET" },
+                { "uri": "/zz-a11", "method": "GET" },
+                { "uri": "/zz-a12", "method": "GET" },
+                { "uri": "/zz-a13", "method": "GET" },
+                { "uri": "/zz-a14", "method": "GET" },
+                { "uri": "/zz-a15", "method": "GET" },
+                { "uri": "/zz-a16", "method": "GET" },
+                { "uri": "/zz-a17", "method": "GET" },
+                { "uri": "/zz-a18", "method": "GET" },
+                { "uri": "/zz-a19", "method": "GET" },
+                { "uri": "/zz-a20", "method": "GET" },
+                { "uri": "/zz-a21", "method": "GET" },
+                { "uri": "/zz-a22", "method": "GET" },
+                { "uri": "/zz-a23", "method": "GET" },
+                { "uri": "/zz-a24", "method": "GET" },
+                { "uri": "/zz-a25", "method": "GET" },
+                { "uri": "/zz-a26", "method": "GET" },
+                { "uri": "/zz-a27", "method": "GET" },
+                { "uri": "/zz-a28", "method": "GET" },
+                { "uri": "/zz-a29", "method": "GET" },
+                { "uri": "/zz-a30", "method": "GET" }
+            ]
+        },
+        {
+            "id": "sc-008",
+            "name": "fake Chrome UA with scanner pattern",
+            "expected": "challenge",
+            "simulate_404": true,
+            "note": "A spoofed browser UA must not protect a scanner pattern.",
+            "requests": [
+                { "uri": "/sqlmap-test/1", "method": "GET", "headers": { "user-agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 Chrome/120.0 sqlmap/1.8" } },
+                { "uri": "/sqlmap-test/2", "method": "GET", "headers": { "user-agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 Chrome/120.0 sqlmap/1.8" } },
+                { "uri": "/sqlmap-test/3", "method": "GET", "headers": { "user-agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 Chrome/120.0 sqlmap/1.8" } },
+                { "uri": "/sqlmap-test/4", "method": "GET", "headers": { "user-agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 Chrome/120.0 sqlmap/1.8" } },
+                { "uri": "/sqlmap-test/5", "method": "GET", "headers": { "user-agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 Chrome/120.0 sqlmap/1.8" } },
+                { "uri": "/sqlmap-test/6", "method": "GET", "headers": { "user-agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 Chrome/120.0 sqlmap/1.8" } },
+                { "uri": "/sqlmap-test/7", "method": "GET", "headers": { "user-agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 Chrome/120.0 sqlmap/1.8" } },
+                { "uri": "/sqlmap-test/8", "method": "GET", "headers": { "user-agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 Chrome/120.0 sqlmap/1.8" } },
+                { "uri": "/sqlmap-test/9", "method": "GET", "headers": { "user-agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 Chrome/120.0 sqlmap/1.8" } },
+                { "uri": "/sqlmap-test/10", "method": "GET", "headers": { "user-agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 Chrome/120.0 sqlmap/1.8" } },
+                { "uri": "/sqlmap-test/11", "method": "GET", "headers": { "user-agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 Chrome/120.0 sqlmap/1.8" } },
+                { "uri": "/sqlmap-test/12", "method": "GET", "headers": { "user-agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 Chrome/120.0 sqlmap/1.8" } },
+                { "uri": "/sqlmap-test/13", "method": "GET", "headers": { "user-agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 Chrome/120.0 sqlmap/1.8" } },
+                { "uri": "/sqlmap-test/14", "method": "GET", "headers": { "user-agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 Chrome/120.0 sqlmap/1.8" } },
+                { "uri": "/sqlmap-test/15", "method": "GET", "headers": { "user-agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 Chrome/120.0 sqlmap/1.8" } },
+                { "uri": "/sqlmap-test/16", "method": "GET", "headers": { "user-agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 Chrome/120.0 sqlmap/1.8" } },
+                { "uri": "/sqlmap-test/17", "method": "GET", "headers": { "user-agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 Chrome/120.0 sqlmap/1.8" } },
+                { "uri": "/sqlmap-test/18", "method": "GET", "headers": { "user-agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 Chrome/120.0 sqlmap/1.8" } },
+                { "uri": "/sqlmap-test/19", "method": "GET", "headers": { "user-agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 Chrome/120.0 sqlmap/1.8" } },
+                { "uri": "/sqlmap-test/20", "method": "GET", "headers": { "user-agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 Chrome/120.0 sqlmap/1.8" } },
+                { "uri": "/sqlmap-test/21", "method": "GET", "headers": { "user-agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 Chrome/120.0 sqlmap/1.8" } },
+                { "uri": "/sqlmap-test/22", "method": "GET", "headers": { "user-agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 Chrome/120.0 sqlmap/1.8" } }
+            ]
+        },
+        {
+            "id": "sc-009",
+            "name": "backup php file probing",
+            "expected": "block",
+            "note": "Backup variants of PHP files are high confidence probes.",
+            "requests": [
+                { "uri": "/config.php.bak", "method": "GET" }
+            ]
+        },
+        {
+            "id": "sc-010",
+            "name": "wp-config backup variant",
+            "expected": "block",
+            "note": "wp-config.php.save is a documented sensitive backup.",
+            "requests": [
+                { "uri": "/backup/wp-config.php.save", "method": "GET" }
+            ]
+        }
+    ]
+}

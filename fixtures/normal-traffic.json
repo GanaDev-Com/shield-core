@@ -1,0 +1,17 @@
+{
+    "description": "Normal, legitimate traffic used to prove the firewall never bans or challenges real users.",
+    "requests": [
+        { "uri": "/", "method": "GET", "host": "example.test" },
+        { "uri": "/home", "method": "GET", "host": "example.test" },
+        { "uri": "/about", "method": "GET", "host": "example.test" },
+        { "uri": "/contact", "method": "GET", "host": "example.test" },
+        { "uri": "/login", "method": "GET", "host": "example.test" },
+        { "uri": "/api/users?page=2", "method": "GET", "host": "example.test" },
+        { "uri": "/products/123", "method": "GET", "host": "example.test" },
+        { "uri": "/cart", "method": "GET", "host": "example.test" },
+        { "uri": "/blog/how-to-secure-php", "method": "GET", "host": "example.test" },
+        { "uri": "/faq", "method": "GET", "host": "example.test" },
+        { "uri": "/sitemap.xml", "method": "GET", "host": "example.test" },
+        { "uri": "/search?q=laravel+security", "method": "GET", "host": "example.test" }
+    ]
+}

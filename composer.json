@@ -1,0 +1,49 @@
+{
+    "name": "ganadev/shield-core",
+    "description": "Framework-agnostic adaptive application firewall core for Ganadev Shield.",
+    "type": "library",
+    "license": "MIT",
+    "authors": [
+        {
+            "name": "Ganadev",
+            "homepage": "https://ganadev.com"
+        }
+    ],
+    "support": {
+        "issues": "https://github.com/GanaDev-Com/shield-core/issues",
+        "source": "https://github.com/GanaDev-Com/shield-core"
+    },
+    "keywords": ["security", "firewall", "waf", "ids", "ips", "php"],
+    "require": {
+        "php": "^8.2"
+    },
+    "require-dev": {
+        "laravel/pint": "^1.18",
+        "pestphp/pest": "^3.6",
+        "phpstan/phpstan": "^2.1"
+    },
+    "autoload": {
+        "psr-4": {
+            "Ganadev\\Shield\\Core\\": "src/"
+        }
+    },
+    "autoload-dev": {
+        "psr-4": {
+            "Ganadev\\Shield\\Core\\Tests\\": "tests/"
+        }
+    },
+    "config": {
+        "sort-packages": true,
+        "allow-plugins": {
+            "pestphp/pest-plugin": true
+        }
+    },
+    "scripts": {
+        "test": "vendor/bin/pest",
+        "analyse": "vendor/bin/phpstan analyse --memory-limit=512M",
+        "format": "vendor/bin/pint",
+        "format-test": "vendor/bin/pint --test"
+    },
+    "minimum-stability": "stable",
+    "prefer-stable": true
+}

@@ -1,0 +1,25 @@
+{
+    "description": "SEO-critical paths that must never be blocked or challenged, even from a verified crawler doing a heavy crawl. Regression guard for search-engine crawlability (robots.txt, sitemaps, feeds, content pages, REST/static assets).",
+    "entries": [
+        { "uri": "/robots.txt", "method": "GET", "expected": "allow" },
+        { "uri": "/sitemap.xml", "method": "GET", "expected": "allow" },
+        { "uri": "/sitemap_index.xml", "method": "GET", "expected": "allow" },
+        { "uri": "/wp-sitemap.xml", "method": "GET", "expected": "allow" },
+        { "uri": "/feed", "method": "GET", "expected": "allow" },
+        { "uri": "/feed.xml", "method": "GET", "expected": "allow" },
+        { "uri": "/rss", "method": "GET", "expected": "allow" },
+        { "uri": "/atom.xml", "method": "GET", "expected": "allow" },
+        { "uri": "/", "method": "GET", "expected": "allow" },
+        { "uri": "/about", "method": "GET", "expected": "allow" },
+        { "uri": "/blog", "method": "GET", "expected": "allow" },
+        { "uri": "/blog/2024/01/15/how-to-seo", "method": "GET", "expected": "allow" },
+        { "uri": "/products/123", "method": "GET", "expected": "allow" },
+        { "uri": "/category/seo", "method": "GET", "expected": "allow" },
+        { "uri": "/tag/wordpress", "method": "GET", "expected": "allow" },
+        { "uri": "/author/admin", "method": "GET", "expected": "allow" },
+        { "uri": "/search?q=keyword", "method": "GET", "expected": "allow" },
+        { "uri": "/wp-json/wp/v2/posts", "method": "GET", "expected": "allow" },
+        { "uri": "/wp-content/uploads/2024/01/photo.jpg", "method": "GET", "expected": "allow" },
+        { "uri": "/canonical.html", "method": "GET", "expected": "allow" }
+    ]
+}

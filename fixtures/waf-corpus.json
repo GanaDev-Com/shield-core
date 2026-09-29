@@ -1,0 +1,1081 @@
+{
+    "description": "Anonymized corpus derived from waf_logs. IPs removed; URI/method/reason preserved. Expected reflects what Ganadev Shield should do.",
+    "source": "waf_logs(1).csv",
+    "total_log_rows": 1706,
+    "entries": [
+        {
+            "uri": "/cgi-bin/php?%ADd+allow_url_include%3d1+%ADd+auto_prepend_file%3dphp://input",
+            "method": "POST",
+            "expected": "block",
+            "category": "Malware.Expert - query_string: remote php execute"
+        },
+        {
+            "uri": "/index.php?%ADd+allow_url_include%3d1+%ADd+auto_prepend_file%3dphp://input",
+            "method": "POST",
+            "expected": "block",
+            "category": "Malware.Expert - query_string: remote php execute"
+        },
+        {
+            "uri": "/cgi-bin/php?%ADd+allow_url_include%3d1+%ADd+auto_prepend_file%3dphp://input",
+            "method": "GET",
+            "expected": "block",
+            "category": "Malware.Expert - query_string: remote php execute"
+        },
+        {
+            "uri": "/index.php?%ADd+allow_url_include%3d1+%ADd+auto_prepend_file%3dphp://input",
+            "method": "GET",
+            "expected": "block",
+            "category": "Malware.Expert - query_string: remote php execute"
+        },
+        {
+            "uri": "/userfiles/x?path=../../.env",
+            "method": "GET",
+            "expected": "block",
+            "category": "Malware.Expert - request_uri: directory travel"
+        },
+        {
+            "uri": "/userfiles?path=../../.env",
+            "method": "GET",
+            "expected": "block",
+            "category": "Malware.Expert - request_uri: directory travel"
+        },
+        {
+            "uri": "/api/w/default/jobs_u/get_log_file/../../../../proc/self/environ",
+            "method": "GET",
+            "expected": "block",
+            "category": "Malware.Expert - request_uri: directory travel"
+        },
+        {
+            "uri": "/api/w/admins/jobs_u/get_log_file/../../../../proc/self/environ",
+            "method": "GET",
+            "expected": "block",
+            "category": "Malware.Expert - request_uri: directory travel"
+        },
+        {
+            "uri": "/api/console/api_server?sense_version=%40%40SENSE_VERSION&apis=../../../../../../.env",
+            "method": "GET",
+            "expected": "block",
+            "category": "Malware.Expert - request_uri: directory travel"
+        },
+        {
+            "uri": "/_image?href=/../../../.env",
+            "method": "GET",
+            "expected": "block",
+            "category": "Malware.Expert - request_uri: directory travel"
+        },
+        {
+            "uri": "/userfiles/x?path=../../../../proc/self/environ",
+            "method": "GET",
+            "expected": "block",
+            "category": "Malware.Expert - request_uri: directory travel"
+        },
+        {
+            "uri": "/userfiles?path=../../../../proc/self/environ",
+            "method": "GET",
+            "expected": "block",
+            "category": "Malware.Expert - request_uri: directory travel"
+        },
+        {
+            "uri": "/userfiles?path=../../../../.env",
+            "method": "GET",
+            "expected": "block",
+            "category": "Malware.Expert - request_uri: directory travel"
+        },
+        {
+            "uri": "/api/w/starter/jobs_u/get_log_file/../../../../proc/self/environ",
+            "method": "GET",
+            "expected": "block",
+            "category": "Malware.Expert - request_uri: directory travel"
+        },
+        {
+            "uri": "/api/console/api_server?sense_version=%40%40SENSE_VERSION&apis=../../../../../../proc/self/environ",
+            "method": "GET",
+            "expected": "block",
+            "category": "Malware.Expert - request_uri: directory travel"
+        },
+        {
+            "uri": "/userfiles?path=../../../.env",
+            "method": "GET",
+            "expected": "block",
+            "category": "Malware.Expert - request_uri: directory travel"
+        },
+        {
+            "uri": "/env.json",
+            "method": "GET",
+            "expected": "block",
+            "category": "Malware.Expert - Block /env.*"
+        },
+        {
+            "uri": "/env.old",
+            "method": "GET",
+            "expected": "block",
+            "category": "Malware.Expert - Block /env.*"
+        },
+        {
+            "uri": "/env.bak",
+            "method": "GET",
+            "expected": "block",
+            "category": "Malware.Expert - Block /env.*"
+        },
+        {
+            "uri": "/env.txt",
+            "method": "GET",
+            "expected": "block",
+            "category": "Malware.Expert - Block /env.*"
+        },
+        {
+            "uri": "/env.php",
+            "method": "GET",
+            "expected": "block",
+            "category": "Malware.Expert - Block /env.*"
+        },
+        {
+            "uri": "/env.yaml",
+            "method": "GET",
+            "expected": "block",
+            "category": "Malware.Expert - Block /env.*"
+        },
+        {
+            "uri": "/__vite_rsc_findSourceMapURL?filename=file:///root/.aws/credentials&environmentName=rsc",
+            "method": "GET",
+            "expected": "block",
+            "category": "Malware.Expert - request_uri: AWS Credentials"
+        },
+        {
+            "uri": "/.aws/credentials",
+            "method": "GET",
+            "expected": "block",
+            "category": "Malware.Expert - request_uri: AWS Credentials"
+        },
+        {
+            "uri": "/.aws/credentials.bak",
+            "method": "GET",
+            "expected": "block",
+            "category": "Malware.Expert - request_uri: AWS Credentials"
+        },
+        {
+            "uri": "/@fs/home/ec2-user/.aws/credentials?raw??",
+            "method": "GET",
+            "expected": "block",
+            "category": "Malware.Expert - request_uri: AWS Credentials"
+        },
+        {
+            "uri": "/@fs/root/.aws/credentials?raw??",
+            "method": "GET",
+            "expected": "block",
+            "category": "Malware.Expert - request_uri: AWS Credentials"
+        },
+        {
+            "uri": "/%2eaws/credentials_iam",
+            "method": "GET",
+            "expected": "block",
+            "category": "Malware.Expert - request_uri: AWS Credentials"
+        },
+        {
+            "uri": "/s3/%2eaws/credentials",
+            "method": "GET",
+            "expected": "block",
+            "category": "Malware.Expert - request_uri: AWS Credentials"
+        },
+        {
+            "uri": "/%2eaws/credentials_alb",
+            "method": "GET",
+            "expected": "block",
+            "category": "Malware.Expert - request_uri: AWS Credentials"
+        },
+        {
+            "uri": "/%2eaws/credentials_dynamodb",
+            "method": "GET",
+            "expected": "block",
+            "category": "Malware.Expert - request_uri: AWS Credentials"
+        },
+        {
+            "uri": "/%2eaws/credentials%2ealpha",
+            "method": "GET",
+            "expected": "block",
+            "category": "Malware.Expert - request_uri: AWS Credentials"
+        },
+        {
+            "uri": "/%2eaws/credentials_iam_api_key",
+            "method": "GET",
+            "expected": "block",
+            "category": "Malware.Expert - request_uri: AWS Credentials"
+        },
+        {
+            "uri": "/%2eaws/credentials_ssm",
+            "method": "GET",
+            "expected": "block",
+            "category": "Malware.Expert - request_uri: AWS Credentials"
+        },
+        {
+            "uri": "/app/%2eaws/credentials",
+            "method": "GET",
+            "expected": "block",
+            "category": "Malware.Expert - request_uri: AWS Credentials"
+        },
+        {
+            "uri": "/%2eaws/credentials_iam_session_token",
+            "method": "GET",
+            "expected": "block",
+            "category": "Malware.Expert - request_uri: AWS Credentials"
+        },
+        {
+            "uri": "/%2eaws/credentials_local",
+            "method": "GET",
+            "expected": "block",
+            "category": "Malware.Expert - request_uri: AWS Credentials"
+        },
+        {
+            "uri": "/wp-content/debug.log",
+            "method": "GET",
+            "expected": "block",
+            "category": "Malware.Expert - Wordpress Plugin Litespeed Cache - Privilege Escalation"
+        },
+        {
+            "uri": "/wp-content/debug%2elog",
+            "method": "GET",
+            "expected": "block",
+            "category": "Malware.Expert - Wordpress Plugin Litespeed Cache - Privilege Escalation"
+        },
+        {
+            "uri": "/logs/wp-content/debug%2elog",
+            "method": "GET",
+            "expected": "block",
+            "category": "Malware.Expert - Wordpress Plugin Litespeed Cache - Privilege Escalation"
+        },
+        {
+            "uri": "/%2e%2e%252F%2e%2e%252F%2e%2e%252F%2e%2e%252F%2e%2e%252Froot/%2essh/id_rsa",
+            "method": "GET",
+            "expected": "block",
+            "category": "Malware.Expert - Apache - Path Traversal"
+        },
+        {
+            "uri": "/%2e%2e%5c%2e%2e%5c%2e%2e%5c%2e%2e%5c%2e%2e%5c%2e%2e%5cvar/log/apache2/access%2elog",
+            "method": "GET",
+            "expected": "block",
+            "category": "Malware.Expert - Apache - Path Traversal"
+        },
+        {
+            "uri": "/pms?module=logging&file_name=%2e%2e/%2e%2e/%2e%2e/%2e%2e/%2e%2e/%2e%2e/~/%2eaws/credentials&number_of_lines=10000",
+            "method": "GET",
+            "expected": "block",
+            "category": "Malware.Expert - Apache - Path Traversal"
+        },
+        {
+            "uri": "/%2e%2e%252F%2e%2e%252F%2e%2e%252F%2e%2e%252F%2e%2e%252Fvar/www/html/%2eenv",
+            "method": "GET",
+            "expected": "block",
+            "category": "Malware.Expert - Apache - Path Traversal"
+        },
+        {
+            "uri": "/%2e%2e%252F%2e%2e%252F%2e%2e%252F%2e%2e%252F%2e%2e%252Froot/%2eaws/credentials",
+            "method": "GET",
+            "expected": "block",
+            "category": "Malware.Expert - Apache - Path Traversal"
+        },
+        {
+            "uri": "/api/uploads/%2e%2e%2f%2e%2e%2f.env",
+            "method": "GET",
+            "expected": "block",
+            "category": "Malware.Expert - Apache - Path Traversal"
+        },
+        {
+            "uri": "//cache/cache/cache.php",
+            "method": "GET",
+            "expected": "block",
+            "category": "Malware.Expert - Malware"
+        },
+        {
+            "uri": "//wp-content/plugins/plugins/cache.php",
+            "method": "GET",
+            "expected": "block",
+            "category": "Malware.Expert - Malware"
+        },
+        {
+            "uri": "//cgi-bin/cgi-bin/cgi-bin/cgi-bin/cache.php",
+            "method": "GET",
+            "expected": "block",
+            "category": "Malware.Expert - Malware"
+        },
+        {
+            "uri": "/wp-content/plugins/fix/up.php",
+            "method": "GET",
+            "expected": "block",
+            "category": "Malware.Expert - Malware"
+        },
+        {
+            "uri": "/class%2ephp%2etmp",
+            "method": "GET",
+            "expected": "block",
+            "category": "Malware.Expert - Malware"
+        },
+        {
+            "uri": "/class%2ephp%2eorig",
+            "method": "GET",
+            "expected": "block",
+            "category": "Malware.Expert - Malware"
+        },
+        {
+            "uri": "/class%2ephp%2ecopy",
+            "method": "GET",
+            "expected": "block",
+            "category": "Malware.Expert - Malware"
+        },
+        {
+            "uri": "/class%2ephp%2eold",
+            "method": "GET",
+            "expected": "block",
+            "category": "Malware.Expert - Malware"
+        },
+        {
+            "uri": "//blogs/media/media/cache.php",
+            "method": "GET",
+            "expected": "block",
+            "category": "Malware.Expert - request_uri: prevent PHP files from executing"
+        },
+        {
+            "uri": "//assets/images/images/cache.php",
+            "method": "GET",
+            "expected": "block",
+            "category": "Malware.Expert - request_uri: ModX - prevent PHP files from executing"
+        },
+        {
+            "uri": "//images/images/images/cache.php",
+            "method": "GET",
+            "expected": "block",
+            "category": "Malware.Expert - request_uri: Images folder - prevent PHP files from executing"
+        },
+        {
+            "uri": "//images/images/images/images/cache.php",
+            "method": "GET",
+            "expected": "block",
+            "category": "Malware.Expert - request_uri: Images folder - prevent PHP files from executing"
+        },
+        {
+            "uri": "//images/images/images/images/images/cache.php",
+            "method": "GET",
+            "expected": "block",
+            "category": "Malware.Expert - request_uri: Images folder - prevent PHP files from executing"
+        },
+        {
+            "uri": "//images/images/images/images/images/images/cache.php",
+            "method": "GET",
+            "expected": "block",
+            "category": "Malware.Expert - request_uri: Images folder - prevent PHP files from executing"
+        },
+        {
+            "uri": "//images/images/images/images/images/images/images/cache.php",
+            "method": "GET",
+            "expected": "block",
+            "category": "Malware.Expert - request_uri: Images folder - prevent PHP files from executing"
+        },
+        {
+            "uri": "//images/images/images/images/images/images/images/images/cache.php",
+            "method": "GET",
+            "expected": "block",
+            "category": "Malware.Expert - request_uri: Images folder - prevent PHP files from executing"
+        },
+        {
+            "uri": "//images/images/cache.php",
+            "method": "GET",
+            "expected": "block",
+            "category": "Malware.Expert - request_uri: Images folder - prevent PHP files from executing"
+        },
+        {
+            "uri": "/__vite_rsc_findSourceMapURL?filename=file:///app/.env&environmentName=rsc",
+            "method": "GET",
+            "expected": "block",
+            "category": "Malware.Expert - request_uri: .ENV Files"
+        },
+        {
+            "uri": "/service/.env",
+            "method": "GET",
+            "expected": "block",
+            "category": "Malware.Expert - request_uri: .ENV Files"
+        },
+        {
+            "uri": "/shop/.env",
+            "method": "GET",
+            "expected": "block",
+            "category": "Malware.Expert - request_uri: .ENV Files"
+        },
+        {
+            "uri": "/var/www/.env",
+            "method": "GET",
+            "expected": "block",
+            "category": "Malware.Expert - request_uri: .ENV Files"
+        },
+        {
+            "uri": "/web/.env",
+            "method": "GET",
+            "expected": "block",
+            "category": "Malware.Expert - request_uri: .ENV Files"
+        },
+        {
+            "uri": "/v3/.env",
+            "method": "GET",
+            "expected": "block",
+            "category": "Malware.Expert - request_uri: .ENV Files"
+        },
+        {
+            "uri": "/var/www/html/.env",
+            "method": "GET",
+            "expected": "block",
+            "category": "Malware.Expert - request_uri: .ENV Files"
+        },
+        {
+            "uri": "/v2/.env",
+            "method": "GET",
+            "expected": "block",
+            "category": "Malware.Expert - request_uri: .ENV Files"
+        },
+        {
+            "uri": "/v1/.env",
+            "method": "GET",
+            "expected": "block",
+            "category": "Malware.Expert - request_uri: .ENV Files"
+        },
+        {
+            "uri": "/test/.env",
+            "method": "GET",
+            "expected": "block",
+            "category": "Malware.Expert - request_uri: .ENV Files"
+        },
+        {
+            "uri": "/stripe/.env",
+            "method": "GET",
+            "expected": "block",
+            "category": "Malware.Expert - request_uri: .ENV Files"
+        },
+        {
+            "uri": "/staging/.env",
+            "method": "GET",
+            "expected": "block",
+            "category": "Malware.Expert - request_uri: .ENV Files"
+        },
+        {
+            "uri": "/src/.env",
+            "method": "GET",
+            "expected": "block",
+            "category": "Malware.Expert - request_uri: .ENV Files"
+        },
+        {
+            "uri": "/server/backend/.env",
+            "method": "GET",
+            "expected": "block",
+            "category": "Malware.Expert - request_uri: .ENV Files"
+        },
+        {
+            "uri": "/server/.env",
+            "method": "GET",
+            "expected": "block",
+            "category": "Malware.Expert - request_uri: .ENV Files"
+        },
+        {
+            "uri": "/wp-config.old",
+            "method": "GET",
+            "expected": "block",
+            "category": "Malware.Expert - request_uri: read wordpress configuration file"
+        },
+        {
+            "uri": "/admin/sql/wp-config%2ebak",
+            "method": "GET",
+            "expected": "block",
+            "category": "Malware.Expert - request_uri: read wordpress configuration file"
+        },
+        {
+            "uri": "/admin/static/wp-config%2eenv",
+            "method": "GET",
+            "expected": "block",
+            "category": "Malware.Expert - request_uri: read wordpress configuration file"
+        },
+        {
+            "uri": "/core/backup/wp-config%2esql",
+            "method": "GET",
+            "expected": "block",
+            "category": "Malware.Expert - request_uri: read wordpress configuration file"
+        },
+        {
+            "uri": "/%22/wp-config%2ebak%22,",
+            "method": "GET",
+            "expected": "block",
+            "category": "Malware.Expert - request_uri: read wordpress configuration file"
+        },
+        {
+            "uri": "/api/test/wp-config%2eenv",
+            "method": "GET",
+            "expected": "block",
+            "category": "Malware.Expert - request_uri: read wordpress configuration file"
+        },
+        {
+            "uri": "/api/wp-config%2eenv",
+            "method": "GET",
+            "expected": "block",
+            "category": "Malware.Expert - request_uri: read wordpress configuration file"
+        },
+        {
+            "uri": "/wp-config%2eold",
+            "method": "GET",
+            "expected": "block",
+            "category": "Malware.Expert - request_uri: read wordpress configuration file"
+        },
+        {
+            "uri": "/backup/wp-config%2esql",
+            "method": "GET",
+            "expected": "block",
+            "category": "Malware.Expert - request_uri: read wordpress configuration file"
+        },
+        {
+            "uri": "/backup/wp-config%2eenv",
+            "method": "GET",
+            "expected": "block",
+            "category": "Malware.Expert - request_uri: read wordpress configuration file"
+        },
+        {
+            "uri": "/core/secrets/wp-config%2ebak",
+            "method": "GET",
+            "expected": "block",
+            "category": "Malware.Expert - request_uri: read wordpress configuration file"
+        },
+        {
+            "uri": "/api/upload/wp-config%2ebak",
+            "method": "GET",
+            "expected": "block",
+            "category": "Malware.Expert - request_uri: read wordpress configuration file"
+        },
+        {
+            "uri": "/api/keys/wp-config%2ebak",
+            "method": "GET",
+            "expected": "block",
+            "category": "Malware.Expert - request_uri: read wordpress configuration file"
+        },
+        {
+            "uri": "/admin/config/wp-config%2ebak",
+            "method": "GET",
+            "expected": "block",
+            "category": "Malware.Expert - request_uri: read wordpress configuration file"
+        },
+        {
+            "uri": "/wp-json/gravitysmtp/v1/tests/mock-data?page=gravitysmtp-settings",
+            "method": "GET",
+            "expected": "block",
+            "category": "Malware.Expert - Wordpress Plugin - Gravity SMTP Plugin Sensitive Information Exposure"
+        },
+        {
+            "uri": "/%77%70%2Djson/gravitysmtp/v1/tests/mock-data?page=gravitysmtp-settings",
+            "method": "GET",
+            "expected": "block",
+            "category": "Malware.Expert - Wordpress Plugin - Gravity SMTP Plugin Sensitive Information Exposure"
+        },
+        {
+            "uri": "/wp-json/gravitysmtp/v1/tests/./mock-data?page=gravitysmtp-settings",
+            "method": "GET",
+            "expected": "block",
+            "category": "Malware.Expert - Wordpress Plugin - Gravity SMTP Plugin Sensitive Information Exposure"
+        },
+        {
+            "uri": "/Wp-Json/gravitysmtp/v1/tests/mock-data?page=gravitysmtp-settings",
+            "method": "GET",
+            "expected": "block",
+            "category": "Malware.Expert - Wordpress Plugin - Gravity SMTP Plugin Sensitive Information Exposure"
+        },
+        {
+            "uri": "/livewire/update",
+            "method": "GET",
+            "expected": "allow",
+            "category": "Malware.Expert - user-agent: Bad user-agent (Mozilla/5.0)"
+        },
+        {
+            "uri": "/",
+            "method": "GET",
+            "expected": "allow",
+            "category": "Malware.Expert - user-agent: Bad user-agent (Mozilla/5.0)"
+        },
+        {
+            "uri": "/rest/settings",
+            "method": "GET",
+            "expected": "allow",
+            "category": "Malware.Expert - user-agent: Bad user-agent (Mozilla/5.0)"
+        },
+        {
+            "uri": "/wp-admin/setup-config.php",
+            "method": "GET",
+            "expected": "allow",
+            "category": "Malware.Expert - empty User-Agent accessing WP PHP file in directory"
+        },
+        {
+            "uri": "/wp-admin/install.php",
+            "method": "GET",
+            "expected": "allow",
+            "category": "Malware.Expert - empty User-Agent accessing WP PHP file in directory"
+        },
+        {
+            "uri": "/?page_id=1&pagename=templates%252f%252e%252e%252f%252e%252e%252f%252e%252e%252f%252e%252e%252f%252e%252e%252f%252e%252e%252f%252e%252e%252f%252e%252e%252fwp-links-opml",
+            "method": "GET",
+            "expected": "block",
+            "category": "Malware.Expert - WP core - encoded path traversal via pagename"
+        },
+        {
+            "uri": "/?page_id=1&pagename=templates%252f%252e%252e%252f%252e%252e%252f%252e%252e%252f%252e%252e%252f%252e%252e%252f%252e%252e%252f%252e%252e%252f%252e%252e%252fwp-links-opml",
+            "method": "POST",
+            "expected": "block",
+            "category": "Malware.Expert - WP core - encoded path traversal via pagename"
+        },
+        {
+            "uri": "/?page_id=1&pagename=templates%252f%252e%252e%252f%252e%252e%252fwp-links-opml",
+            "method": "GET",
+            "expected": "block",
+            "category": "Malware.Expert - WP core - encoded path traversal via pagename"
+        },
+        {
+            "uri": "/?page_id=1&pagename=templates%252f%252e%252e%252f%252e%252e%252fwp-links-opml",
+            "method": "POST",
+            "expected": "block",
+            "category": "Malware.Expert - WP core - encoded path traversal via pagename"
+        },
+        {
+            "uri": "/?page_id=1&pagename=templates%252f%252e%252e%252f%252e%252e%252f%252e%252e%252f%252e%252e%252f%252e%252e%252f%252e%252e%252f%252e%252e%252fwp-links-opml",
+            "method": "GET",
+            "expected": "block",
+            "category": "Malware.Expert - WP core - encoded path traversal via pagename"
+        },
+        {
+            "uri": "/?page_id=1&pagename=templates%252f%252e%252e%252f%252e%252e%252f%252e%252e%252f%252e%252e%252f%252e%252e%252f%252e%252e%252f%252e%252e%252fwp-links-opml",
+            "method": "POST",
+            "expected": "block",
+            "category": "Malware.Expert - WP core - encoded path traversal via pagename"
+        },
+        {
+            "uri": "/?page_id=1&pagename=templates%252f%252e%252e%252f%252e%252e%252f%252e%252e%252f%252e%252e%252f%252e%252e%252f%252e%252e%252fwp-links-opml",
+            "method": "GET",
+            "expected": "block",
+            "category": "Malware.Expert - WP core - encoded path traversal via pagename"
+        },
+        {
+            "uri": "/?page_id=1&pagename=templates%252f%252e%252e%252f%252e%252e%252f%252e%252e%252f%252e%252e%252f%252e%252e%252f%252e%252e%252fwp-links-opml",
+            "method": "POST",
+            "expected": "block",
+            "category": "Malware.Expert - WP core - encoded path traversal via pagename"
+        },
+        {
+            "uri": "/?page_id=1&pagename=templates%252f%252e%252e%252f%252e%252e%252f%252e%252e%252f%252e%252e%252f%252e%252e%252fwp-links-opml",
+            "method": "GET",
+            "expected": "block",
+            "category": "Malware.Expert - WP core - encoded path traversal via pagename"
+        },
+        {
+            "uri": "/?page_id=1&pagename=templates%252f%252e%252e%252f%252e%252e%252f%252e%252e%252f%252e%252e%252f%252e%252e%252fwp-links-opml",
+            "method": "POST",
+            "expected": "block",
+            "category": "Malware.Expert - WP core - encoded path traversal via pagename"
+        },
+        {
+            "uri": "/?page_id=1&pagename=templates%252f%252e%252e%252f%252e%252e%252f%252e%252e%252fwp-links-opml",
+            "method": "GET",
+            "expected": "block",
+            "category": "Malware.Expert - WP core - encoded path traversal via pagename"
+        },
+        {
+            "uri": "/?page_id=1&pagename=templates%252f%252e%252e%252f%252e%252e%252f%252e%252e%252fwp-links-opml",
+            "method": "POST",
+            "expected": "block",
+            "category": "Malware.Expert - WP core - encoded path traversal via pagename"
+        },
+        {
+            "uri": "/?page_id=1&pagename=templates%252f%252e%252e%252f%252e%252e%252f%252e%252e%252f%252e%252e%252fwp-links-opml",
+            "method": "GET",
+            "expected": "block",
+            "category": "Malware.Expert - WP core - encoded path traversal via pagename"
+        },
+        {
+            "uri": "/?page_id=1&pagename=templates%252f%252e%252e%252f%252e%252e%252f%252e%252e%252f%252e%252e%252fwp-links-opml",
+            "method": "POST",
+            "expected": "block",
+            "category": "Malware.Expert - WP core - encoded path traversal via pagename"
+        },
+        {
+            "uri": "/?page_id=10&pagename=templates%252f%252e%252e%252f%252e%252e%252f%252e%252e%252f%252e%252e%252f%252e%252e%252f%252e%252e%252f%252e%252e%252f%252e%252e%252fwp-links-opml",
+            "method": "GET",
+            "expected": "block",
+            "category": "Malware.Expert - WP core - encoded path traversal via pagename"
+        },
+        {
+            "uri": "/wp-admin/admin-ajax.php",
+            "method": "POST",
+            "expected": "allow",
+            "category": "Malware.Expert - Wordpress - Referer missing"
+        },
+        {
+            "uri": "/wp-admin/js/index.php",
+            "method": "GET",
+            "expected": "block",
+            "category": "Malware.Expert - request_uri: Wordpress - prevent PHP files from executing"
+        },
+        {
+            "uri": "/wp-admin/includes/index.php",
+            "method": "GET",
+            "expected": "block",
+            "category": "Malware.Expert - request_uri: Wordpress - prevent PHP files from executing"
+        },
+        {
+            "uri": "/wp-admin/images/index.php",
+            "method": "GET",
+            "expected": "block",
+            "category": "Malware.Expert - request_uri: Wordpress - prevent PHP files from executing"
+        },
+        {
+            "uri": "/wp-admin/css/index.php",
+            "method": "GET",
+            "expected": "block",
+            "category": "Malware.Expert - request_uri: Wordpress - prevent PHP files from executing"
+        },
+        {
+            "uri": "/wp-content/uploads/index.php",
+            "method": "GET",
+            "expected": "block",
+            "category": "Malware.Expert - request_uri: Wordpress - prevent PHP files from executing"
+        },
+        {
+            "uri": "/wp-content/uploads/2026/222.php",
+            "method": "GET",
+            "expected": "block",
+            "category": "Malware.Expert - request_uri: Wordpress - prevent PHP files from executing"
+        },
+        {
+            "uri": "/wp-content/uploads/222.php",
+            "method": "GET",
+            "expected": "block",
+            "category": "Malware.Expert - request_uri: Wordpress - prevent PHP files from executing"
+        },
+        {
+            "uri": "/wp-content/uploads/elementor/222.php",
+            "method": "GET",
+            "expected": "block",
+            "category": "Malware.Expert - request_uri: Wordpress - prevent PHP files from executing"
+        },
+        {
+            "uri": "/wp-content/cache/index.php",
+            "method": "GET",
+            "expected": "block",
+            "category": "Malware.Expert - WordPress cache executable file request blocked"
+        },
+        {
+            "uri": "/.tmb/worksec.php",
+            "method": "GET",
+            "expected": "block",
+            "category": "Malware.Expert - request_uri: hidden .php execute"
+        },
+        {
+            "uri": "/config/.env.php",
+            "method": "GET",
+            "expected": "block",
+            "category": "Malware.Expert - request_uri: hidden .php execute"
+        },
+        {
+            "uri": "/.env.php",
+            "method": "GET",
+            "expected": "block",
+            "category": "Malware.Expert - request_uri: hidden .php execute"
+        },
+        {
+            "uri": "/%2eenv%2ephp%2ebak",
+            "method": "GET",
+            "expected": "block",
+            "category": "Malware.Expert - request_uri: hidden .php execute"
+        },
+        {
+            "uri": "/index.php?s=index/\\think\\app/invokefunction&function=call_user_func_array&vars[0]=file_get_contents&vars[1][]=/proc/self/environ",
+            "method": "GET",
+            "expected": "block",
+            "category": "Malware.Expert - request_uri: call_user_func"
+        },
+        {
+            "uri": "/index.php?s=index/\\think\\app/invokefunction&function=call_user_func_array&vars[0]=system&vars[1][]=env",
+            "method": "GET",
+            "expected": "block",
+            "category": "Malware.Expert - request_uri: call_user_func"
+        },
+        {
+            "uri": "/index.php?s=index/\\think\\app/invokefunction&function=call_user_func_array&vars[0]=file_get_contents&vars[1][]=.env",
+            "method": "GET",
+            "expected": "block",
+            "category": "Malware.Expert - request_uri: call_user_func"
+        },
+        {
+            "uri": "/stripe/webhook_secret.env",
+            "method": "GET",
+            "expected": "block",
+            "category": "Malware.Expert - Block *.env"
+        },
+        {
+            "uri": "/aws/ses/smtp.env",
+            "method": "GET",
+            "expected": "block",
+            "category": "Malware.Expert - Block *.env"
+        },
+        {
+            "uri": "/stripe.env",
+            "method": "GET",
+            "expected": "block",
+            "category": "Malware.Expert - Block *.env"
+        },
+        {
+            "uri": "/sendgrid.env",
+            "method": "GET",
+            "expected": "block",
+            "category": "Malware.Expert - Block *.env"
+        },
+        {
+            "uri": "/config.env",
+            "method": "GET",
+            "expected": "block",
+            "category": "Malware.Expert - Block *.env"
+        },
+        {
+            "uri": "/aws.env",
+            "method": "GET",
+            "expected": "block",
+            "category": "Malware.Expert - Block *.env"
+        },
+        {
+            "uri": "/.smtp.env",
+            "method": "GET",
+            "expected": "block",
+            "category": "Malware.Expert - Block *.env"
+        },
+        {
+            "uri": "/.mail.env",
+            "method": "GET",
+            "expected": "block",
+            "category": "Malware.Expert - Block *.env"
+        },
+        {
+            "uri": "/admin/php/config%2eenv",
+            "method": "GET",
+            "expected": "block",
+            "category": "Malware.Expert - Block *.env"
+        },
+        {
+            "uri": "/admin/json/readme%2eenv",
+            "method": "GET",
+            "expected": "block",
+            "category": "Malware.Expert - Block *.env"
+        },
+        {
+            "uri": "/admin/mail/ses%2eenv",
+            "method": "GET",
+            "expected": "block",
+            "category": "Malware.Expert - Block *.env"
+        },
+        {
+            "uri": "/mailgun/postmark%2eenv",
+            "method": "GET",
+            "expected": "block",
+            "category": "Malware.Expert - Block *.env"
+        },
+        {
+            "uri": "/home/ubuntu/aws_credentials%2eenv",
+            "method": "GET",
+            "expected": "block",
+            "category": "Malware.Expert - Block *.env"
+        },
+        {
+            "uri": "/core/public/secret%2eenv",
+            "method": "GET",
+            "expected": "block",
+            "category": "Malware.Expert - Block *.env"
+        },
+        {
+            "uri": "/core/db/database%2eenv",
+            "method": "GET",
+            "expected": "block",
+            "category": "Malware.Expert - Block *.env"
+        },
+        {
+            "uri": "/config.php.bak",
+            "method": "GET",
+            "expected": "block",
+            "category": "Malware.Expert - request_uri: .PHP backup files"
+        },
+        {
+            "uri": "/mysql%2ephp%2ebak",
+            "method": "GET",
+            "expected": "block",
+            "category": "Malware.Expert - request_uri: .PHP backup files"
+        },
+        {
+            "uri": "/memcache%2ephp%2ebak",
+            "method": "GET",
+            "expected": "block",
+            "category": "Malware.Expert - request_uri: .PHP backup files"
+        },
+        {
+            "uri": "/app/etc/env%2ephp%2ebak",
+            "method": "GET",
+            "expected": "block",
+            "category": "Malware.Expert - request_uri: .PHP backup files"
+        },
+        {
+            "uri": "/api%2ephp%2ebak",
+            "method": "GET",
+            "expected": "block",
+            "category": "Malware.Expert - request_uri: .PHP backup files"
+        },
+        {
+            "uri": "/sidebar%2ephp%2ebak",
+            "method": "GET",
+            "expected": "block",
+            "category": "Malware.Expert - request_uri: .PHP backup files"
+        },
+        {
+            "uri": "/subscribe%2ephp%2ebak",
+            "method": "GET",
+            "expected": "block",
+            "category": "Malware.Expert - request_uri: .PHP backup files"
+        },
+        {
+            "uri": "/navbar%2ephp%2ebak",
+            "method": "GET",
+            "expected": "block",
+            "category": "Malware.Expert - request_uri: .PHP backup files"
+        },
+        {
+            "uri": "/login%2ephp%2ebak",
+            "method": "GET",
+            "expected": "block",
+            "category": "Malware.Expert - request_uri: .PHP backup files"
+        },
+        {
+            "uri": "/confirm%2ephp%2ebak",
+            "method": "GET",
+            "expected": "block",
+            "category": "Malware.Expert - request_uri: .PHP backup files"
+        },
+        {
+            "uri": "/web/config%2ephp%2ebak",
+            "method": "GET",
+            "expected": "block",
+            "category": "Malware.Expert - request_uri: .PHP backup files"
+        },
+        {
+            "uri": "/nav%2ephp%2ebak",
+            "method": "GET",
+            "expected": "block",
+            "category": "Malware.Expert - request_uri: .PHP backup files"
+        },
+        {
+            "uri": "/cart%2ephp%2ebak",
+            "method": "GET",
+            "expected": "block",
+            "category": "Malware.Expert - request_uri: .PHP backup files"
+        },
+        {
+            "uri": "/newsletter%2ephp%2ebak",
+            "method": "GET",
+            "expected": "block",
+            "category": "Malware.Expert - request_uri: .PHP backup files"
+        },
+        {
+            "uri": "/discord%2ephp%2ebak",
+            "method": "GET",
+            "expected": "block",
+            "category": "Malware.Expert - request_uri: .PHP backup files"
+        },
+        {
+            "uri": "/configuration.php.bak",
+            "method": "GET",
+            "expected": "block",
+            "category": "Malware.Expert - request_uri: read joomla configuration file"
+        },
+        {
+            "uri": "/.git/config.bak",
+            "method": "GET",
+            "expected": "block",
+            "category": "Malware.Expert - request_uri: .git config"
+        },
+        {
+            "uri": "/.git/config",
+            "method": "GET",
+            "expected": "block",
+            "category": "Malware.Expert - request_uri: .git config"
+        },
+        {
+            "uri": "/backend-api/%2egit/config",
+            "method": "GET",
+            "expected": "block",
+            "category": "Malware.Expert - request_uri: .git config"
+        },
+        {
+            "uri": "/apis/%2egit/config",
+            "method": "GET",
+            "expected": "block",
+            "category": "Malware.Expert - request_uri: .git config"
+        },
+        {
+            "uri": "/conta/%2egit/config",
+            "method": "GET",
+            "expected": "block",
+            "category": "Malware.Expert - request_uri: .git config"
+        },
+        {
+            "uri": "/staging/%2egit/config",
+            "method": "GET",
+            "expected": "block",
+            "category": "Malware.Expert - request_uri: .git config"
+        },
+        {
+            "uri": "/fe/%2egit/config",
+            "method": "GET",
+            "expected": "block",
+            "category": "Malware.Expert - request_uri: .git config"
+        },
+        {
+            "uri": "/StudioServer/%2egit/config",
+            "method": "GET",
+            "expected": "block",
+            "category": "Malware.Expert - request_uri: .git config"
+        },
+        {
+            "uri": "/api/user/v1/%2egit/config",
+            "method": "GET",
+            "expected": "block",
+            "category": "Malware.Expert - request_uri: .git config"
+        },
+        {
+            "uri": "/events%2e%2e/%2egit/config",
+            "method": "GET",
+            "expected": "block",
+            "category": "Malware.Expert - request_uri: .git config"
+        },
+        {
+            "uri": "/functions/%2egit/config",
+            "method": "GET",
+            "expected": "block",
+            "category": "Malware.Expert - request_uri: .git config"
+        },
+        {
+            "uri": "/node-api/%2egit/config",
+            "method": "GET",
+            "expected": "block",
+            "category": "Malware.Expert - request_uri: .git config"
+        },
+        {
+            "uri": "/prod/%2egit/config",
+            "method": "GET",
+            "expected": "block",
+            "category": "Malware.Expert - request_uri: .git config"
+        },
+        {
+            "uri": "/wp-content/%2egit/config",
+            "method": "GET",
+            "expected": "block",
+            "category": "Malware.Expert - request_uri: .git config"
+        },
+        {
+            "uri": "/web/%2egit/config",
+            "method": "GET",
+            "expected": "block",
+            "category": "Malware.Expert - request_uri: .git config"
+        }
+    ]
+}

@@ -1,0 +1,109 @@
+name: CI
+
+on:
+  push:
+    branches: [main, master]
+  pull_request:
+  workflow_dispatch:
+
+jobs:
+  tests:
+    name: PHP ${{ matrix.php }}
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        php: ['8.2', '8.3', '8.4']
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup PHP
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: ${{ matrix.php }}
+          extensions: mbstring, intl, sqlite, dom, xml
+          coverage: xdebug
+          tools: composer:v2
+
+      - name: Install dependencies
+        run: composer install --no-interaction --prefer-dist --no-progress
+
+      - name: Composer validate
+        run: composer validate --strict --no-check-publish
+
+      - name: Lint (Pint)
+        run: composer format-test
+
+      - name: Static analysis (PHPStan)
+        run: composer analyse
+
+      - name: Run tests (Pest)
+        run: composer test
+
+      - name: Coverage (gate >= 85%)
+        run: |
+          mkdir -p build
+          vendor/bin/pest --configuration phpunit.coverage-core.xml.dist --coverage --coverage-text=build/coverage-core.txt
+          php tools/check-coverage.php build/coverage-core.txt 85
+
+      - name: Scanner simulator (regression)
+        run: php tools/scanner-simulator/simulate.php
+
+      - name: Performance benchmark (allow-path < 2ms)
+        run: php tools/scanner-simulator/benchmark.php
+
+      - name: Dependency audit
+        run: composer audit --locked
+
+  mutation:
+    name: Mutation testing (PHP 8.4, advisory)
+    runs-on: ubuntu-latest
+    if: github.event_name == 'push'
+    # Pest native mutation scoped ke Decision/Scoring/Reputation + paralel,
+    # report-only (--min=0) sampai baseline MSI ada. Tidak memblokir pipeline.
+    continue-on-error: true
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup PHP
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: '8.4'
+          extensions: mbstring, intl, sqlite, dom, xml
+          coverage: xdebug
+          tools: composer:v2
+
+      - name: Install dependencies
+        run: composer install --no-interaction --prefer-dist --no-progress
+
+      - name: Run mutation testing
+        run: mkdir -p build && composer mutate 2>&1 | tee build/mutation.log; exit ${PIPESTATUS[0]}
+
+      - name: Upload mutation report
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: mutation-report
+          path: build/mutation.log
+          if-no-files-found: ignore
+          retention-days: 14
+
+  secrets:
+    name: Secret scan (gitleaks)
+    runs-on: ubuntu-latest
+    continue-on-error: true
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - uses: actions/setup-go@v5
+        with:
+          go-version: 'stable'
+
+      - name: Gitleaks scan
+        run: |
+          go install github.com/zricethezav/gitleaks/v8@latest
+          mkdir -p build
+          "$(go env GOPATH)/bin/gitleaks" detect --source . --no-banner --config .gitleaks.toml --report-format json --report-path build/gitleaks.json

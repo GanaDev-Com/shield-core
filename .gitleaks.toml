@@ -1,0 +1,66 @@
+# Konfigurasi Gitleaks untuk Ganadev Shield.
+#
+# Repo ini adalah package keamanan yang penuh data uji (fixture, payload,
+# contoh key, config sample). Ruleset default gitleaks menghasilkan ribuan
+# false positive (terutama rule "Generic API Key" yang cocok dengan
+# token=/secret=/password= diikuti string 16-45 karakter). Karena itu TIDAK
+# memakai [extend] useDefault; hanya ruleset kustom ber-confidence tinggi
+# untuk format secret nyata. Skor: 0 temuan saat ini, tetap menangkap secret
+# asli jika terlanjur di-commit.
+
+title = "ganadev-shield gitleaks config"
+
+[[rules]]
+id = "aws-access-token"
+description = "AWS Access Key ID"
+regex = '''\bAKIA[0-9A-Z]{16}\b'''
+secretGroup = 0
+
+[[rules]]
+id = "github-pat"
+description = "GitHub Personal Access Token"
+regex = '''\b(ghp|gho|ghu|ghs|ghr)_[A-Za-z0-9]{36,255}\b'''
+secretGroup = 0
+
+[[rules]]
+id = "github-oauth-app"
+description = "GitHub OAuth App Token"
+regex = '''\bgithub_pat_[A-Za-z0-9_]{20,}\b'''
+secretGroup = 0
+
+[[rules]]
+id = "slack-token"
+description = "Slack Token"
+regex = '''\bxox[baprs]-[A-Za-z0-9-]{10,48}\b'''
+secretGroup = 0
+
+[[rules]]
+id = "private-key"
+description = "Private Key"
+regex = '''-----BEGIN [A-Z0-9 ]*PRIVATE KEY-----'''
+secretGroup = 0
+
+[[rules]]
+id = "google-api-key"
+description = "Google API Key"
+regex = '''\bAIza[0-9A-Za-z\-_]{35}\b'''
+secretGroup = 0
+
+[[rules]]
+id = "stripe-api-key"
+description = "Stripe API Key"
+regex = '''\b(sk|rk)_(live|test)_[0-9a-zA-Z]{10,99}\b'''
+secretGroup = 0
+
+[allowlist]
+description = "Kunci uji/demo yang memang ada di repo (dokumentasi & .env.example)"
+regexes = [
+    '''6LeIxAcTAAAA[A-Za-z0-9_-]+''',
+    '''6LepPrUtAAAA[A-Za-z0-9_-]+''',
+    '''3x00000000000000000000FF''',
+    '''1x00000000000000000000AA''',
+    '''1x0000000000000000000000000000000AA''',
+]
+paths = [
+    '''\.gitleaks\.toml$''',
+]

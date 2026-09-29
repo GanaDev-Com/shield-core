@@ -42,7 +42,8 @@
         "test": "vendor/bin/pest",
         "analyse": "vendor/bin/phpstan analyse --memory-limit=512M",
         "format": "vendor/bin/pint",
-        "format-test": "vendor/bin/pint --test"
+        "format-test": "vendor/bin/pint --test",
+        "mutate": "@php tools/mutate.php"
     },
     "minimum-stability": "stable",
     "prefer-stable": true

@@ -49,10 +49,10 @@ it('rejects invalid response codes', function () {
     expect(fn () => coreConfig(['response_code' => 42]))->toThrow(InvalidConfigException::class);
 });
 
-it('defaults to challenge bot mode with verification enabled', function () {
+it('defaults to observe bot mode with verification enabled', function () {
     $config = coreConfig();
 
-    expect($config->botMode)->toBe('challenge');
+    expect($config->botMode)->toBe('observe');
     expect($config->crawlerVerificationEnabled)->toBeTrue();
     expect($config->crawlerVerificationTtlHours)->toBe(24);
     expect($config->crawlerHostnames['googlebot'])->toContain('.googlebot.com');
@@ -65,6 +65,28 @@ it('defaults the injection pack and body inspection on', function () {
     expect($config->rulesPacksInjection)->toBeTrue();
     expect($config->bodyInspectionEnabled)->toBeTrue();
     expect($config->bodyInspectionMaxBytes)->toBe(65536);
+});
+
+it('exposes the wordpress rules pack flag instead of dropping it', function () {
+    expect(coreConfig()->rulesPacksWordpress)->toBeFalse();
+    expect(coreConfig(['rules' => ['packs' => ['wordpress' => true]]])->rulesPacksWordpress)->toBeTrue();
+});
+
+it('keeps the wordpress pack off while the injection pack stays independent', function () {
+    $config = coreConfig(['rules' => ['packs' => ['injection' => false]]]);
+
+    expect($config->rulesPacksInjection)->toBeFalse();
+    expect($config->rulesPacksWordpress)->toBeFalse();
+});
+
+it('defaults bypass event logging on and allows turning it off', function () {
+    expect(coreConfig()->logBypassEvents)->toBeTrue();
+    expect(coreConfig()->logEvents)->toBeTrue();
+
+    $disabled = coreConfig(['logging' => ['bypass_events' => false]]);
+
+    expect($disabled->logBypassEvents)->toBeFalse();
+    expect($disabled->logEvents)->toBeTrue();
 });
 
 it('defaults the scanner tool user agent list and signal', function () {
@@ -99,4 +121,31 @@ it('rejects invalid verification and inspection settings', function () {
         ->toThrow(InvalidConfigException::class);
     expect(fn () => coreConfig(['inspection' => ['body' => ['max_bytes' => 512]]]))
         ->toThrow(InvalidConfigException::class);
+});
+
+it('rejects an allowlist path that would allowlist every request', function (string $path) {
+    expect(fn () => coreConfig(['allowlist' => ['paths' => [$path]]]))
+        ->toThrow(InvalidConfigException::class, 'would allowlist every request');
+})->with(['', '/', '   ']);
+
+it('rejects an allowlist path without a leading slash', function () {
+    expect(fn () => coreConfig(['allowlist' => ['paths' => ['admin']]]))
+        ->toThrow(InvalidConfigException::class, 'must start with "/"');
+});
+
+it('rejects an allowlist path carrying a query string', function () {
+    expect(fn () => coreConfig(['allowlist' => ['paths' => ['/admin?debug=1']]]))
+        ->toThrow(InvalidConfigException::class, 'must not contain a query string');
+});
+
+it('accepts specific allowlist paths and trims surrounding whitespace', function () {
+    $config = coreConfig(['allowlist' => [
+        'paths' => [' /admin ', '/api/v2'],
+        'hosts' => [' example.test '],
+        'ips' => [' 203.0.113.9 '],
+    ]]);
+
+    expect($config->allowlist['paths'])->toBe(['/admin', '/api/v2']);
+    expect($config->allowlist['hosts'])->toBe(['example.test']);
+    expect($config->allowlist['ips'])->toBe(['203.0.113.9']);
 });

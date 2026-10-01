@@ -60,6 +60,15 @@ final class ShieldEngine
         $hasCritical = $this->signatures->hasCriticalMatch($matches);
 
         if ($this->isAllowlisted($request) && ! $hasCritical) {
+            $this->recordEarlyExitEvent(
+                $request,
+                $normalized,
+                new ScoreBreakdown(0, 0, 0, 0, 0, [], [], false),
+                [],
+                new Verdict(Decision::Allowed, Decision::Allowed, 'allowlist', 0),
+                $options,
+            );
+
             return new EngineResult(
                 verdict: new Verdict(Decision::Allowed, Decision::Allowed, 'allowlist', 0),
                 request: $request,
@@ -85,6 +94,15 @@ final class ShieldEngine
         $activeBan = $this->loadActiveBan($request->ip, $degraded);
 
         if ($degraded && $this->config->failMode === ShieldConfig::FAIL_CLOSED) {
+            $this->recordEarlyExitEvent(
+                $request,
+                $normalized,
+                new ScoreBreakdown(0, 0, 0, 0, 99, [], [], false),
+                $matches,
+                new Verdict(Decision::BlockRequest, Decision::BlockRequest, 'fail_closed', 99),
+                $options,
+            );
+
             return new EngineResult(
                 verdict: new Verdict(Decision::BlockRequest, Decision::BlockRequest, 'fail_closed', 99),
                 request: $request,
@@ -129,7 +147,7 @@ final class ShieldEngine
             );
         }
 
-        $this->persist($request, $normalized, $breakdown, $matches, $verdict, $activeBan);
+        $this->persist($request, $normalized, $breakdown, $matches, $verdict, $activeBan, $options);
 
         return new EngineResult(
             verdict: $verdict,
@@ -198,6 +216,7 @@ final class ShieldEngine
 
     /**
      * @param  list<RuleMatch>  $matches
+     * @param  array<string, mixed>  $options
      */
     private function persist(
         RequestContext $request,
@@ -206,9 +225,10 @@ final class ShieldEngine
         array $matches,
         Verdict $verdict,
         ?BanRecord $activeBan,
+        array $options = [],
     ): void {
         if ($this->config->logEvents) {
-            $this->recordEvent($request, $normalized, $breakdown, $matches, $verdict);
+            $this->recordEvent($request, $normalized, $breakdown, $matches, $verdict, $options);
         }
 
         if ($verdict->blocked()) {
@@ -219,7 +239,28 @@ final class ShieldEngine
     }
 
     /**
+     * Records the allowlist and fail-closed short circuits, which are security
+     * relevant decisions that would otherwise leave no audit trail at all.
+     *
      * @param  list<RuleMatch>  $matches
+     * @param  array<string, mixed>  $options
+     */
+    private function recordEarlyExitEvent(
+        RequestContext $request,
+        mixed $normalized,
+        ScoreBreakdown $breakdown,
+        array $matches,
+        Verdict $verdict,
+        array $options,
+    ): void {
+        if ($this->config->logBypassEvents) {
+            $this->recordEvent($request, $normalized, $breakdown, $matches, $verdict, $options);
+        }
+    }
+
+    /**
+     * @param  list<RuleMatch>  $matches
+     * @param  array<string, mixed>  $options
      */
     private function recordEvent(
         RequestContext $request,
@@ -227,9 +268,11 @@ final class ShieldEngine
         ScoreBreakdown $breakdown,
         array $matches,
         Verdict $verdict,
+        array $options = [],
     ): void {
         $masker = new UriMasker;
         $sensitive = $this->config->sensitiveQueryParameters;
+        $requestId = $options['request_id'] ?? null;
 
         $event = SecurityEvent::create([
             'ip' => $request->ip,
@@ -245,7 +288,7 @@ final class ShieldEngine
             'intended_decision' => $verdict->intended->value,
             'user_agent' => $request->userAgent(),
             'referer' => $request->referer() !== '' ? $request->referer() : null,
-            'request_id' => null,
+            'request_id' => is_string($requestId) && $requestId !== '' ? $requestId : null,
             'rule_version' => $this->config->ruleVersion,
             'created_at' => $this->clock->now(),
         ]);

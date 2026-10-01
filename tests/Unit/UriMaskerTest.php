@@ -24,6 +24,13 @@ it('masks common suffix variants like access_token', function () {
     expect(maskUri('/?client_secret=xyz'))->toBe('/?client_secret=***');
 });
 
+it('masks sensitive keys that were percent-encoded in the query', function () {
+    expect(maskUri('/?access%5Ftoken=xyz'))->toBe('/?access%5Ftoken=***');
+    expect(maskUri('/?api%5Fkey=xyz'))->toBe('/?api%5Fkey=***');
+    expect(maskUri('/?%74oken=xyz'))->toBe('/?%74oken=***');
+    expect(maskUri('/?ACCESS_TOKEN=xyz'))->toBe('/?ACCESS_TOKEN=***');
+});
+
 it('leaves non-sensitive parameters untouched', function () {
     expect(maskUri('/home?page=2&q=laravel+security'))->toBe('/home?page=2&q=laravel+security');
 });

@@ -19,6 +19,9 @@ final class RiskScorer
 
     /**
      * @param  list<RuleMatch>  $ruleMatches
+     * @param  int  $challengePenalty  Reserved for failed-challenge scoring. The
+     *                                 engine always passes 0 today; no caller feeds
+     *                                 a non-zero value yet.
      */
     public function score(
         array $ruleMatches,

@@ -61,6 +61,65 @@ it('no default or injection rule matches any SEO-critical path', function () {
     }
 });
 
+it('never blocks or challenges SEO-critical paths when crawler verification fails', function () {
+    $engine = makeEngine([
+        'mode' => 'enforce',
+        'bots' => ['mode' => 'observe'],
+    ], ['crawler' => new FakeCrawlerVerifier]);
+
+    foreach (seoCorpus()['entries'] as $entry) {
+        $uri = (string) $entry['uri'];
+        $ctx = shieldRequest(
+            $uri,
+            (string) ($entry['method'] ?? 'GET'),
+            '203.0.113.5',
+            ['user-agent' => 'Mozilla/5.0 (compatible; Googlebot/2.1; +http://www.google.com/bot.html)'],
+        );
+
+        $result = $engine->inspect($ctx, new BehaviorCounters);
+
+        expect($result->shouldBlock())->toBeFalse($uri.' must not be blocked when crawler verification fails');
+        expect($result->shouldChallenge())->toBeFalse($uri.' must not be challenged when crawler verification fails');
+    }
+});
+
+it('never blocks or challenges SEO-critical paths when crawler verification is disabled', function () {
+    $engine = makeEngine([
+        'mode' => 'enforce',
+        'bots' => ['mode' => 'observe', 'verification' => ['enabled' => false]],
+    ]);
+
+    foreach (seoCorpus()['entries'] as $entry) {
+        $uri = (string) $entry['uri'];
+        $ctx = shieldRequest(
+            $uri,
+            (string) ($entry['method'] ?? 'GET'),
+            '203.0.113.5',
+            ['user-agent' => 'Mozilla/5.0 (compatible; Googlebot/2.1; +http://www.google.com/bot.html)'],
+        );
+
+        $result = $engine->inspect($ctx, new BehaviorCounters);
+
+        expect($result->shouldBlock())->toBeFalse($uri.' must not be blocked when crawler verification is disabled');
+        expect($result->shouldChallenge())->toBeFalse($uri.' must not be challenged when crawler verification is disabled');
+    }
+});
+
+it('challenges an unverified crawler claim on SEO paths only when bots.mode is challenge', function () {
+    $engine = makeEngine([
+        'mode' => 'enforce',
+        'bots' => ['mode' => 'challenge'],
+    ], ['crawler' => new FakeCrawlerVerifier]);
+
+    $result = $engine->inspect(
+        shieldRequest('/sitemap.xml', 'GET', '203.0.113.5', ['user-agent' => 'Googlebot/2.1']),
+        new BehaviorCounters,
+    );
+
+    expect($result->shouldChallenge())->toBeTrue();
+    expect($result->verdict->reason)->toBe('unverified_crawler_claim_googlebot');
+});
+
 it('never challenges SEO-critical paths from a verified crawler under burst counters', function () {
     $engine = makeEngine([
         'mode' => 'enforce',

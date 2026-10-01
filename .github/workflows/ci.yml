@@ -43,11 +43,16 @@ jobs:
       - name: Coverage (gate >= 85%)
         run: |
           mkdir -p build
-          vendor/bin/pest --configuration phpunit.coverage-core.xml.dist --coverage --coverage-text=build/coverage-core.txt
+          vendor/bin/pest --configuration phpunit.xml.dist --coverage --coverage-text=build/coverage-core.txt
           php tools/check-coverage.php build/coverage-core.txt 85
 
       - name: Scanner simulator (regression)
         run: php tools/scanner-simulator/simulate.php
+
+      # The corpus contains WordPress plugin fixtures, so the optional pack must
+      # be enabled here to reach the detection-rate gate.
+      - name: Replay regression fixtures
+        run: php tools/replay.php --pack-wordpress
 
       - name: Performance benchmark (allow-path < 2ms)
         run: php tools/scanner-simulator/benchmark.php

@@ -27,6 +27,7 @@ use Ganadev\Shield\Core\Tests\Support\FakeCrawlerVerifier;
 use Ganadev\Shield\Core\Tests\Support\InMemoryBanRepository;
 use Ganadev\Shield\Core\Tests\Support\InMemoryEventRepository;
 use Ganadev\Shield\Core\Tests\Support\StaticTrustedCookie;
+use Ganadev\Shield\Core\Tests\Support\ThrowingBanRepository;
 
 /**
  * @param  array<string, mixed>  $overrides
@@ -52,6 +53,9 @@ function makeEngine(array $config = [], array $deps = []): ShieldEngine
     $definitions = DefaultRules::definitions();
     if ($cfg->rulesPacksInjection) {
         $definitions = array_merge($definitions, DefaultRules::injectionDefinitions());
+    }
+    if ($cfg->rulesPacksWordpress) {
+        $definitions = array_merge($definitions, DefaultRules::wordpressDefinitions());
     }
 
     return new ShieldEngine(
@@ -100,6 +104,14 @@ function makeBans(): InMemoryBanRepository
 function makeEvents(): InMemoryEventRepository
 {
     return new InMemoryEventRepository;
+}
+
+/**
+ * Ban store that always throws, used to exercise the degraded/fail-closed path.
+ */
+function makeFailingBanRepository(): ThrowingBanRepository
+{
+    return new ThrowingBanRepository;
 }
 
 function makeCache(): ArrayCache

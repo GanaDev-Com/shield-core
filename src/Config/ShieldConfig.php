@@ -41,6 +41,7 @@ final class ShieldConfig
         public readonly int $behaviorWindowSeconds,
         public readonly int $notFoundLimit,
         public readonly bool $logEvents,
+        public readonly bool $logBypassEvents,
         public readonly string $adminAuthorize,
         /** @var array{hosts: list<string>, paths: list<string>, ips: list<string>} */
         public readonly array $allowlist,
@@ -61,7 +62,13 @@ final class ShieldConfig
         /** @var list<string> */
         public readonly array $suspiciousUserAgentOverrides,
         public readonly bool $missingRefererSignal,
+        /**
+         * Core does not assemble the rule set itself; the Laravel adapter reads
+         * `shield.rules.packs` directly when building the RuleRepository. This
+         * property exists so a core-only consumer can honour the same flag.
+         */
         public readonly bool $rulesPacksInjection,
+        public readonly bool $rulesPacksWordpress,
         public readonly int $pathRateLimit,
         /** @var list<string> */
         public readonly array $sensitivePaths,
@@ -140,6 +147,7 @@ final class ShieldConfig
             ],
             'logging' => [
                 'events' => true,
+                'bypass_events' => true,
             ],
             'admin' => [
                 'authorize' => '',
@@ -175,7 +183,7 @@ final class ShieldConfig
                 'show_rule_id' => true,
             ],
             'bots' => [
-                'mode' => 'challenge',
+                'mode' => 'observe',
                 'unverified_claim_signal' => 4,
                 'verification' => [
                     'enabled' => true,
@@ -255,8 +263,9 @@ final class ShieldConfig
             behaviorWindowSeconds: (int) $c['behavior']['window_seconds'],
             notFoundLimit: (int) $c['behavior']['not_found_limit'],
             logEvents: (bool) $c['logging']['events'],
+            logBypassEvents: (bool) ($c['logging']['bypass_events'] ?? true),
             adminAuthorize: (string) ($c['admin']['authorize'] ?? ''),
-            allowlist: $c['allowlist'],
+            allowlist: self::normalizeAllowlist($c['allowlist']),
             trustedEnabled: (bool) $c['trusted']['enabled'],
             trustedTtlMinutes: (int) $c['trusted']['ttl_minutes'],
             maxUriLength: (int) $c['performance']['max_uri_length'],
@@ -276,6 +285,7 @@ final class ShieldConfig
             suspiciousUserAgentOverrides: array_values(array_map('strval', $c['behavior']['suspicious_user_agents'])),
             missingRefererSignal: (bool) $c['behavior']['missing_referer_signal'],
             rulesPacksInjection: (bool) ($c['rules']['packs']['injection'] ?? true),
+            rulesPacksWordpress: (bool) ($c['rules']['packs']['wordpress'] ?? false),
             pathRateLimit: (int) $c['behavior']['path_rate_limit'],
             sensitivePaths: array_values(array_map('strval', $c['behavior']['sensitive_paths'])),
             sensitivePathRateLimit: (int) $c['behavior']['sensitive_path_rate_limit'],
@@ -314,6 +324,23 @@ final class ShieldConfig
         }
 
         return $defaults;
+    }
+
+    /**
+     * Trims allowlist entries so surrounding whitespace cannot silently change
+     * which requests are matched. assertValid() has already rejected empty and
+     * root prefixes by the time this runs.
+     *
+     * @param  array<string, mixed>  $allowlist
+     * @return array{hosts: list<string>, paths: list<string>, ips: list<string>}
+     */
+    private static function normalizeAllowlist(array $allowlist): array
+    {
+        $allowlist['hosts'] = array_values(array_map('trim', array_map('strval', $allowlist['hosts'])));
+        $allowlist['ips'] = array_values(array_map('trim', array_map('strval', $allowlist['ips'])));
+        $allowlist['paths'] = array_values(array_map('trim', array_map('strval', $allowlist['paths'])));
+
+        return $allowlist;
     }
 
     /**
@@ -357,6 +384,26 @@ final class ShieldConfig
         }
         if ((int) ($c['inspection']['body']['max_bytes'] ?? 65536) < 1024) {
             throw new InvalidConfigException('inspection.body.max_bytes must be at least 1024.');
+        }
+        foreach ($c['allowlist']['paths'] as $path) {
+            $trimmed = trim((string) $path);
+            if ($trimmed === '/' || $trimmed === '') {
+                throw new InvalidConfigException(
+                    'allowlist.paths must be specific path prefixes starting with "/". '
+                    .'The value "'.$trimmed.'" would allowlist every request. '
+                    .'To allowlist a whole host use allowlist.hosts or allowlist.ips instead.',
+                );
+            }
+            if (! str_starts_with($trimmed, '/')) {
+                throw new InvalidConfigException(
+                    'allowlist.paths entries must start with "/", got "'.$trimmed.'".',
+                );
+            }
+            if (str_contains($trimmed, '?')) {
+                throw new InvalidConfigException(
+                    'allowlist.paths entries must not contain a query string, got "'.$trimmed.'".',
+                );
+            }
         }
     }
 }

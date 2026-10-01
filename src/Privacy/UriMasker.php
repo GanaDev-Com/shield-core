@@ -46,11 +46,16 @@ final class UriMasker
     }
 
     /**
+     * The key is percent-decoded before matching: `?access%5Ftoken=x` would
+     * otherwise never match the `_token` suffix and would leak in plaintext,
+     * which is the exact encoding used to slip past masking.
+     *
      * @param  list<string>  $sensitiveParams
      */
     private function isSensitive(string $key, array $sensitiveParams): bool
     {
-        $lower = strtolower($key);
+        $decoded = rawurldecode($key);
+        $lower = strtolower($decoded);
 
         foreach ($sensitiveParams as $param) {
             if ($lower === strtolower($param)) {

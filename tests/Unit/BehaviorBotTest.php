@@ -87,6 +87,28 @@ it('allows known crawlers when bots.mode is off', function () {
     expect($result->allowed())->toBeTrue();
 });
 
+it('never challenges an unverified crawler claim with the default bot mode', function () {
+    $engine = makeEngine(['mode' => 'enforce']);
+    $result = $engine->inspect(
+        shieldRequest('/home', 'GET', '203.0.113.5', ['user-agent' => 'Googlebot/2.1']),
+        new BehaviorCounters,
+    );
+
+    expect($result->shouldChallenge())->toBeFalse();
+    expect($result->shouldBlock())->toBeFalse();
+});
+
+it('records the unverified crawler signal even when it is not challenged', function () {
+    $engine = makeEngine(['mode' => 'enforce']);
+    $result = $engine->inspect(
+        shieldRequest('/home', 'GET', '203.0.113.5', ['user-agent' => 'Googlebot/2.1']),
+        new BehaviorCounters,
+    );
+
+    expect($result->verdict->behaviorSignals)
+        ->toContain(BehaviorDetector::SIGNAL_UNVERIFIED_CRAWLER_CLAIM);
+});
+
 it('challenges an unverified crawler claim when bots.mode is challenge', function () {
     $engine = makeEngine(['mode' => 'enforce', 'bots' => ['mode' => 'challenge']]);
     $result = $engine->inspect(

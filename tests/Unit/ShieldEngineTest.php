@@ -100,6 +100,25 @@ it('allows allowlisted hosts and paths', function () {
     expect($result->allowed())->toBeTrue();
 });
 
+it('does not allowlist a request outside the configured path prefixes', function (string $uri, bool $expected) {
+    $result = inspect($uri, [
+        'config' => [
+            'allowlist' => [
+                'hosts' => [],
+                'paths' => ['/admin'],
+                'ips' => [],
+            ],
+        ],
+    ]);
+
+    expect($result->allowlisted)->toBe($expected);
+})->with([
+    ['/admin', true],
+    ['/admin/dashboard', true],
+    ['/api/v2/users', false],
+    ['/administrator', true],
+]);
+
 it('does not allowlist critical signatures', function () {
     $result = inspect('/.env', [
         'config' => [
@@ -256,4 +275,92 @@ it('observe mode logs the intended blocking decision but does not block', functi
     expect($events->last()->decision)->toBe(Decision::Observe->value);
     expect($events->last()->intendedDecision)->toBe(Decision::BlockRequest->value);
     expect($bans->findActiveByIp('203.0.113.10'))->toBeNull();
+});
+
+it('reports observe mode as not blocking without flipping the engine result verdict', function () {
+    $engine = makeEngine(['mode' => 'observe']);
+
+    $result = $engine->inspect(shieldRequest('/.env'), new BehaviorCounters);
+
+    expect($result->verdict->decision)->toBe(Decision::Observe);
+    expect($result->verdict->intended)->toBe(Decision::BlockRequest);
+    expect($result->shouldBlock())->toBeFalse();
+    expect($result->allowed())->toBeFalse();
+});
+
+it('records the request id passed through the inspect options', function () {
+    $events = makeEvents();
+    $engine = makeEngine([], ['events' => $events]);
+
+    $engine->inspect(shieldRequest('/.env'), new BehaviorCounters, ['request_id' => 'req-abc-123']);
+
+    $last = $events->last();
+    assert($last instanceof SecurityEvent);
+    expect($last->requestId)->toBe('req-abc-123');
+});
+
+it('leaves the request id null when the option is missing or blank', function () {
+    $events = makeEvents();
+    $engine = makeEngine([], ['events' => $events]);
+
+    $engine->inspect(shieldRequest('/.env'), new BehaviorCounters);
+    $engine->inspect(shieldRequest('/.env'), new BehaviorCounters, ['request_id' => '']);
+
+    expect($events->events)->toHaveCount(2);
+    foreach ($events->events as $event) {
+        expect($event->requestId)->toBeNull();
+    }
+});
+
+it('records allowlist and fail-closed short circuits as security events', function () {
+    $events = makeEvents();
+    $engine = makeEngine(
+        ['fail_mode' => 'closed'],
+        ['events' => $events, 'bans' => makeFailingBanRepository()],
+    );
+
+    $engine->inspect(shieldRequest('/.env'), new BehaviorCounters);
+
+    $last = $events->last();
+    assert($last instanceof SecurityEvent);
+    expect($last->decision)->toBe(Decision::BlockRequest->value);
+    expect($last->intendedDecision)->toBe(Decision::BlockRequest->value);
+    expect($last->scoreDelta)->toBe(99);
+});
+
+it('records allowlisted requests that were not critical', function () {
+    $engine = makeEngine(
+        ['allowlist' => ['ips' => ['203.0.113.9']]],
+        ['events' => $events = makeEvents()],
+    );
+
+    $result = $engine->inspect(shieldRequest('/health', ip: '203.0.113.9'), new BehaviorCounters);
+
+    expect($result->allowlisted)->toBeTrue();
+    expect($events->events)->toHaveCount(1);
+    $last = $events->last();
+    assert($last instanceof SecurityEvent);
+    expect($last->decision)->toBe(Decision::Allowed->value);
+    expect($last->intendedDecision)->toBe(Decision::Allowed->value);
+    expect($last->scoreDelta)->toBe(0);
+});
+
+it('can disable bypass event logging without touching regular event logging', function () {
+    $events = makeEvents();
+    $engine = makeEngine(
+        ['fail_mode' => 'closed', 'logging' => ['bypass_events' => false]],
+        ['events' => $events, 'bans' => makeFailingBanRepository()],
+    );
+
+    $engine->inspect(shieldRequest('/.env'), new BehaviorCounters);
+
+    expect($events->events)->toBeEmpty();
+
+    $regular = makeEngine(
+        [],
+        ['events' => $events],
+    );
+    $regular->inspect(shieldRequest('/.env'), new BehaviorCounters);
+
+    expect($events->events)->toHaveCount(1);
 });

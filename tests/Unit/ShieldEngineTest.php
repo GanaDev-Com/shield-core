@@ -364,3 +364,229 @@ it('can disable bypass event logging without touching regular event logging', fu
 
     expect($events->events)->toHaveCount(1);
 });
+
+describe('logging.level', function () {
+    it('skips allowed requests by default', function () {
+        $events = makeEvents();
+        $engine = makeEngine(['mode' => 'enforce'], ['events' => $events]);
+
+        $engine->inspect(shieldRequest('/home'), new BehaviorCounters);
+
+        expect($events->events)->toBeEmpty();
+    });
+
+    it('keeps challenge decisions at the default level', function () {
+        $events = makeEvents();
+        $engine = makeEngine(['mode' => 'challenge'], ['events' => $events]);
+
+        // 12 from the unique-uri burst, over the default threshold of 10.
+        $engine->inspect(shieldRequest('/page-1'), new BehaviorCounters(30, 0));
+
+        expect($events->events)->toHaveCount(1);
+        expect($events->events[0]->decision)->toBe(Decision::Challenge->value);
+    });
+
+    it('keeps observe decisions at the default level', function () {
+        $events = makeEvents();
+        $engine = makeEngine(['mode' => 'observe'], ['events' => $events]);
+
+        $engine->inspect(shieldRequest('/home'), new BehaviorCounters(0, 0, 0, true));
+
+        expect($events->events)->toHaveCount(1);
+        expect($events->events[0]->decision)->toBe(Decision::Observe->value);
+    });
+
+    it('records nothing but terminal blocks at the blocked level', function () {
+        $events = makeEvents();
+        $engine = makeEngine(['mode' => 'challenge', 'logging' => ['level' => 'blocked']], ['events' => $events]);
+
+        $engine->inspect(shieldRequest('/home'), new BehaviorCounters);
+        $engine->inspect(shieldRequest('/page-1'), new BehaviorCounters(30, 0));
+        expect($events->events)->toBeEmpty();
+
+        $engine->inspect(shieldRequest('/.env'), new BehaviorCounters);
+        expect($events->events)->toHaveCount(1);
+    });
+
+    it('records every request at the all level', function () {
+        $events = makeEvents();
+        $engine = makeEngine(['mode' => 'enforce', 'logging' => ['level' => 'all']], ['events' => $events]);
+
+        $engine->inspect(shieldRequest('/home'), new BehaviorCounters);
+        $engine->inspect(shieldRequest('/about'), new BehaviorCounters);
+
+        expect($events->events)->toHaveCount(2);
+    });
+});
+
+describe('rules.skip_paths', function () {
+    it('drops behavior signals on a skipped path', function () {
+        $engine = makeEngine(['mode' => 'enforce', 'rules' => ['skip_paths' => ['/api/webhooks']]]);
+
+        $result = $engine->inspect(
+            shieldRequest('/api/webhooks', 'POST', '203.0.113.10', ['user-agent' => 'sqlmap']),
+            new BehaviorCounters(999, 999, 999, true),
+        );
+
+        expect($result->score->total)->toBe(0);
+        expect($result->score->behaviorSignals)->toBeEmpty();
+        expect($result->verdict->decision)->toBe(Decision::Allowed);
+    });
+
+    it('still enforces critical signatures on a skipped path', function () {
+        $engine = makeEngine(['mode' => 'enforce', 'rules' => ['skip_paths' => ['/api/webhooks']]]);
+
+        $result = $engine->inspect(shieldRequest('/api/webhooks/.env'), new BehaviorCounters);
+
+        expect($result->shouldBlock())->toBeTrue();
+        expect($result->verdict->ruleId)->toBe('sensitive.env');
+    });
+
+    it('matches a nested path below the prefix', function () {
+        $engine = makeEngine(['mode' => 'enforce', 'rules' => ['skip_paths' => ['/api/webhooks']]]);
+
+        $result = $engine->inspect(
+            shieldRequest('/api/webhooks/stripe', 'POST'),
+            new BehaviorCounters(999, 999, 999, true),
+        );
+
+        expect($result->score->behaviorSignals)->toBeEmpty();
+    });
+
+    it('leaves other paths unaffected', function () {
+        $engine = makeEngine(['mode' => 'enforce', 'rules' => ['skip_paths' => ['/api/webhooks']]]);
+
+        $result = $engine->inspect(
+            shieldRequest('/api/orders', 'POST', '203.0.113.10', ['user-agent' => 'sqlmap']),
+            new BehaviorCounters(999, 999, 999, true),
+        );
+
+        expect($result->score->behaviorSignals)->not->toBeEmpty();
+    });
+});
+
+describe('bots.mode=observe', function () {
+    it('never escalates an unverified crawler claim through behavior alone', function () {
+        $engine = makeEngine([
+            'mode' => 'challenge',
+            'bots' => ['mode' => 'observe'],
+        ]);
+
+        // burst 12 + unverified claim 4 = 16, which is over the challenge
+        // threshold of 10 but under the ban threshold of 20.
+        $result = $engine->inspect(
+            shieldRequest('/page-1', 'GET', '203.0.113.10', googlebotHeaders()),
+            new BehaviorCounters(30, 0),
+        );
+
+        expect($result->score->total)->toBeGreaterThanOrEqual(10);
+        expect($result->verdict->decision)->toBe(Decision::Observe);
+        expect($result->verdict->reason)->toStartWith('crawler_behavior_exempt_');
+    });
+
+    it('does not even ban an unverified crawler that scores past the ban threshold', function () {
+        $bans = makeBans();
+        $engine = makeEngine([
+            'mode' => 'enforce',
+            'bots' => ['mode' => 'observe'],
+        ], ['bans' => $bans]);
+
+        // burst 12 + not found 10 + unverified claim 4 = 26, over the ban
+        // threshold of 20.
+        $result = $engine->inspect(
+            shieldRequest('/page-1', 'GET', '203.0.113.10', googlebotHeaders()),
+            new BehaviorCounters(30, 30),
+        );
+
+        expect($result->verdict->decision)->toBe(Decision::Observe);
+        expect($bans->findActiveByIp('203.0.113.10'))->toBeNull();
+    });
+
+    it('still blocks a signature match from an unverified crawler', function () {
+        $engine = makeEngine([
+            'mode' => 'enforce',
+            'bots' => ['mode' => 'observe'],
+        ]);
+
+        $result = $engine->inspect(
+            shieldRequest('/.env', 'GET', '203.0.113.10', googlebotHeaders()),
+            new BehaviorCounters(30, 0),
+        );
+
+        expect($result->verdict->decision)->toBe(Decision::BlockRequest);
+        expect($result->verdict->ruleId)->toBe('sensitive.env');
+    });
+
+    it('still challenges an already banned crawler', function () {
+        $bans = makeBans();
+        $bans->createBan(new BanRecord(
+            id: '1',
+            ipAddress: '203.0.113.10',
+            status: BanStatus::Active,
+            reason: 'test',
+            lastRuleId: null,
+            riskScore: 25,
+            violationCount: 1,
+            offenseCount: 1,
+            bannedAt: new DateTimeImmutable('2026-01-01 00:00:00'),
+            expiresAt: new DateTimeImmutable('2026-01-01 01:00:00'),
+            releasedAt: null,
+            challengePassedAt: null,
+            lastSeenAt: new DateTimeImmutable('2026-01-01 00:00:00'),
+        ));
+
+        $engine = makeEngine([
+            'mode' => 'challenge',
+            'bots' => ['mode' => 'observe'],
+        ], ['bans' => $bans]);
+
+        $result = $engine->inspect(
+            shieldRequest('/page-1', 'GET', '203.0.113.10', googlebotHeaders()),
+            new BehaviorCounters(30, 0),
+        );
+
+        expect($result->verdict->decision)->toBe(Decision::Challenge);
+        expect($result->verdict->reason)->toBe('active_ban_challenge');
+    });
+
+    it('forces a challenge for an unverified crawler when bots.mode is challenge', function () {
+        $engine = makeEngine([
+            'mode' => 'challenge',
+            'bots' => ['mode' => 'challenge'],
+        ]);
+
+        // The unverified claim (4) plus the bare-Mozilla heuristic (2) stay
+        // below the challenge threshold, so the forced override is what must
+        // produce the challenge.
+        $result = $engine->inspect(
+            shieldRequest('/page-1', 'GET', '203.0.113.10', googlebotHeaders()),
+            new BehaviorCounters,
+        );
+
+        expect($result->score->total)->toBe(6);
+        expect($result->verdict->decision)->toBe(Decision::Challenge);
+        expect($result->verdict->reason)->toBe('unverified_crawler_claim_googlebot');
+    });
+
+    it('still challenges an unverified crawler that already scores over the threshold', function () {
+        $engine = makeEngine([
+            'mode' => 'challenge',
+            'bots' => ['mode' => 'challenge'],
+        ]);
+
+        $result = $engine->inspect(
+            shieldRequest('/page-1', 'GET', '203.0.113.10', googlebotHeaders()),
+            new BehaviorCounters(30, 0),
+        );
+
+        expect($result->verdict->decision)->toBe(Decision::Challenge);
+    });
+});
+
+/**
+ * @return array<string, string>
+ */
+function googlebotHeaders(): array
+{
+    return ['user-agent' => 'Mozilla/5.0 (compatible; Googlebot/2.1; +http://www.google.com/bot.html)'];
+}

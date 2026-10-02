@@ -69,6 +69,14 @@ final class BehaviorDetector
         BehaviorCounters $counters,
         ShieldConfig $config,
     ): BehaviorReport {
+        if ($this->isSkippedPath($context->rawPath, $config)) {
+            // Behavior counters are keyed by IP, so endpoints shared by many
+            // legitimate clients (oauth, service-to-service gateways, datatable
+            // backends) accumulate volume that has nothing to do with a single
+            // actor. Skipping the signals here keeps signatures fully in force.
+            return new BehaviorReport(totalDelta: 0, signals: [], knownCrawler: null);
+        }
+
         $deltas = [];
         $signals = [];
         $knownCrawler = null;
@@ -154,6 +162,17 @@ final class BehaviorDetector
     private function isMethodAnomaly(string $method): bool
     {
         return ! in_array($method, ['GET', 'POST', 'HEAD', 'OPTIONS'], true);
+    }
+
+    private function isSkippedPath(string $path, ShieldConfig $config): bool
+    {
+        foreach ($config->skipPaths as $prefix) {
+            if (str_starts_with($path, $prefix)) {
+                return true;
+            }
+        }
+
+        return false;
     }
 
     private function isVerifiedCrawler(string $claimedAgent, string $ip, ShieldConfig $config): bool

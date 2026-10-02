@@ -21,13 +21,13 @@ it('merges nested overrides', function () {
     $config = coreConfig([
         'thresholds' => ['challenge' => 15],
         'ban' => ['durations' => [30, 120, 360, 1440]],
-        'logging' => ['events' => false],
+        'logging' => ['level' => 'blocked'],
     ]);
 
     expect($config->thresholdChallenge)->toBe(15);
     expect($config->thresholdBan)->toBe(20);
     expect($config->banDurations)->toBe([30, 120, 360, 1440]);
-    expect($config->logEvents)->toBeFalse();
+    expect($config->loggingLevel)->toBe('blocked');
 });
 
 it('rejects invalid modes and fail modes', function () {
@@ -79,15 +79,64 @@ it('keeps the wordpress pack off while the injection pack stays independent', fu
     expect($config->rulesPacksWordpress)->toBeFalse();
 });
 
-it('defaults bypass event logging on and allows turning it off', function () {
+it('defaults to suspicious logging and allows narrowing it', function () {
+    expect(coreConfig()->loggingLevel)->toBe('suspicious');
     expect(coreConfig()->logBypassEvents)->toBeTrue();
-    expect(coreConfig()->logEvents)->toBeTrue();
 
-    $disabled = coreConfig(['logging' => ['bypass_events' => false]]);
+    expect(coreConfig(['logging' => ['level' => 'all']])->loggingLevel)->toBe('all');
+    expect(coreConfig(['logging' => ['level' => 'blocked']])->loggingLevel)->toBe('blocked');
+});
+
+it('keeps bypass event logging independent from the logging level', function () {
+    $disabled = coreConfig(['logging' => ['bypass_events' => false, 'level' => 'blocked']]);
 
     expect($disabled->logBypassEvents)->toBeFalse();
-    expect($disabled->logEvents)->toBeTrue();
+    expect($disabled->loggingLevel)->toBe('blocked');
 });
+
+it('rejects an unknown logging level', function () {
+    expect(fn () => coreConfig(['logging' => ['level' => 'verbose']]))
+        ->toThrow(InvalidConfigException::class, 'Invalid logging.level: verbose');
+});
+
+it('hides the rule id on the blocked page by default', function () {
+    expect(coreConfig()->branding['show_rule_id'])->toBeFalse();
+    expect(coreConfig(['branding' => ['show_rule_id' => true]])->branding['show_rule_id'])->toBeTrue();
+});
+
+it('defaults the api and skip path lists to empty with accept detection on', function () {
+    $config = coreConfig();
+
+    expect($config->apiPaths)->toBe([]);
+    expect($config->apiDetectAccept)->toBeTrue();
+    expect($config->skipPaths)->toBe([]);
+});
+
+it('trims and normalizes the path prefix lists', function () {
+    $config = coreConfig([
+        'api' => ['paths' => ['  /oauth/token  ']],
+        'rules' => ['skip_paths' => [' /api/webhooks ', '/admin/']],
+    ]);
+
+    expect($config->apiPaths)->toBe(['/oauth/token']);
+    expect($config->skipPaths)->toBe(['/api/webhooks', '/admin/']);
+});
+
+it('rejects a path prefix list that would match every request', function (string $key, array $config) {
+    expect(fn () => coreConfig($config))->toThrow(InvalidConfigException::class);
+})->with([
+    ['rules.skip_paths', ['rules' => ['skip_paths' => ['/']]]],
+    ['api.paths', ['api' => ['paths' => ['/']]]],
+]);
+
+it('rejects path prefixes without a leading slash or with a query string', function (string $key, array $config) {
+    expect(fn () => coreConfig($config))->toThrow(InvalidConfigException::class);
+})->with([
+    ['rules.skip_paths', ['rules' => ['skip_paths' => ['oauth/token']]]],
+    ['rules.skip_paths query', ['rules' => ['skip_paths' => ['/oauth?x=1']]]],
+    ['api.paths', ['api' => ['paths' => ['api']]]],
+    ['api.paths query', ['api' => ['paths' => ['/api?x=1']]]],
+]);
 
 it('defaults the scanner tool user agent list and signal', function () {
     $config = coreConfig();

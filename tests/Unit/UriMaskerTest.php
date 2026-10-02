@@ -45,7 +45,9 @@ it('handles duplicate and empty pairs gracefully', function () {
 
 it('masks uris in stored security events', function () {
     $events = makeEvents();
-    $engine = makeEngine(['mode' => 'enforce'], ['events' => $events]);
+    // logging.level=all so the allowed request is recorded: the default
+    // "suspicious" level only stores decisions other than ALLOW.
+    $engine = makeEngine(['mode' => 'enforce', 'logging' => ['level' => 'all']], ['events' => $events]);
 
     $engine->inspect(shieldRequest('/?token=supersecret&x=1'), new BehaviorCounters);
 

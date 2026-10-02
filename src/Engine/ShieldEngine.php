@@ -145,6 +145,26 @@ final class ShieldEngine
                 matchedRuleIds: $breakdown->matchedRuleIds,
                 behaviorSignals: $breakdown->behaviorSignals,
             );
+        } elseif ($this->config->botMode === ShieldConfig::BOT_OBSERVE
+            && $activeBan === null
+            && $breakdown->matchedRuleIds === []
+            && $behaviorReport->has(BehaviorDetector::SIGNAL_UNVERIFIED_CRAWLER_CLAIM)
+            && $verdict->decision->isTerminal()) {
+            // In observe mode an unverified crawler claim may be scored, but it
+            // must never escalate on its own. Crawlers that fail DNS
+            // verification (broken reverse DNS, sandboxed deployments) would
+            // otherwise be challenged or banned purely by burst counters, which
+            // silently removes them from search results. Only a signature match
+            // or an already active ban may still enforce here, hence the guard
+            // on matchedRuleIds and on the absence of an active ban.
+            $verdict = new Verdict(
+                intended: $verdict->intended,
+                decision: Decision::Observe,
+                reason: 'crawler_behavior_exempt_'.($behaviorReport->knownCrawler ?? 'unknown'),
+                score: $breakdown->total,
+                matchedRuleIds: $breakdown->matchedRuleIds,
+                behaviorSignals: $breakdown->behaviorSignals,
+            );
         }
 
         $this->persist($request, $normalized, $breakdown, $matches, $verdict, $activeBan, $options);
@@ -227,7 +247,7 @@ final class ShieldEngine
         ?BanRecord $activeBan,
         array $options = [],
     ): void {
-        if ($this->config->logEvents) {
+        if ($this->shouldLogDecision($verdict)) {
             $this->recordEvent($request, $normalized, $breakdown, $matches, $verdict, $options);
         }
 
@@ -236,6 +256,20 @@ final class ShieldEngine
         } elseif ($activeBan !== null && $verdict->decision === Decision::Allowed) {
             $this->touchBan($activeBan);
         }
+    }
+
+    /**
+     * Applies `logging.level`. Recording every request made the event table grow
+     * without bound on busy sites and buried the rows an operator actually needs,
+     * so the default only keeps decisions that are not a plain ALLOW.
+     */
+    private function shouldLogDecision(Verdict $verdict): bool
+    {
+        return match ($this->config->loggingLevel) {
+            ShieldConfig::LOG_ALL => true,
+            ShieldConfig::LOG_BLOCKED => $verdict->decision->isBlocking(),
+            default => $verdict->decision !== Decision::Allowed,
+        };
     }
 
     /**

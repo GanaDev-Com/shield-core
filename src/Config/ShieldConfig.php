@@ -24,6 +24,12 @@ final class ShieldConfig
 
     public const BOT_CHALLENGE = 'challenge';
 
+    public const LOG_ALL = 'all';
+
+    public const LOG_SUSPICIOUS = 'suspicious';
+
+    public const LOG_BLOCKED = 'blocked';
+
     private function __construct(
         public readonly bool $enabled,
         public readonly string $mode,
@@ -40,7 +46,7 @@ final class ShieldConfig
         public readonly int $uniqueUriLimit,
         public readonly int $behaviorWindowSeconds,
         public readonly int $notFoundLimit,
-        public readonly bool $logEvents,
+        public readonly string $loggingLevel,
         public readonly bool $logBypassEvents,
         public readonly string $adminAuthorize,
         /** @var array{hosts: list<string>, paths: list<string>, ips: list<string>} */
@@ -86,6 +92,24 @@ final class ShieldConfig
         public readonly int $scannerUaSignal,
         public readonly bool $bodyInspectionEnabled,
         public readonly int $bodyInspectionMaxBytes,
+        /**
+         * Path prefixes where body inspection and behavior signals are skipped.
+         * Signature matching still applies, so a critical payload in the URI is
+         * never exempt. Use it for endpoints that legitimately carry free text
+         * (JSON APIs, webhook receivers) or where shared-IP counters are noise
+         * (oauth, service-to-service gateways).
+         *
+         * @var list<string>
+         */
+        public readonly array $skipPaths,
+        /**
+         * Path prefixes that always get a JSON representation of block and
+         * challenge responses, even without an Accept header.
+         *
+         * @var list<string>
+         */
+        public readonly array $apiPaths,
+        public readonly bool $apiDetectAccept,
     ) {}
 
     /**
@@ -146,7 +170,9 @@ final class ShieldConfig
                 ],
             ],
             'logging' => [
-                'events' => true,
+                // 'all' = every request, 'suspicious' = any decision other than
+                // ALLOW, 'blocked' = only terminal blocks (block / temp ban).
+                'level' => self::LOG_SUSPICIOUS,
                 'bypass_events' => true,
             ],
             'admin' => [
@@ -180,7 +206,7 @@ final class ShieldConfig
                 'title' => 'Ganadev Laravel Shield',
                 'accent_color' => '#22d3ee',
                 'background_color' => '#0b1220',
-                'show_rule_id' => true,
+                'show_rule_id' => false,
             ],
             'bots' => [
                 'mode' => 'observe',
@@ -227,12 +253,17 @@ final class ShieldConfig
                     'wordpress' => false,
                     'injection' => true,
                 ],
+                'skip_paths' => [],
             ],
             'inspection' => [
                 'body' => [
                     'enabled' => true,
                     'max_bytes' => 65536,
                 ],
+            ],
+            'api' => [
+                'paths' => [],
+                'detect_accept' => true,
             ],
         ];
     }
@@ -262,7 +293,7 @@ final class ShieldConfig
             uniqueUriLimit: (int) $c['behavior']['unique_uri_limit'],
             behaviorWindowSeconds: (int) $c['behavior']['window_seconds'],
             notFoundLimit: (int) $c['behavior']['not_found_limit'],
-            logEvents: (bool) $c['logging']['events'],
+            loggingLevel: (string) ($c['logging']['level'] ?? self::LOG_SUSPICIOUS),
             logBypassEvents: (bool) ($c['logging']['bypass_events'] ?? true),
             adminAuthorize: (string) ($c['admin']['authorize'] ?? ''),
             allowlist: self::normalizeAllowlist($c['allowlist']),
@@ -278,7 +309,7 @@ final class ShieldConfig
                 'title' => (string) $c['branding']['title'],
                 'accent_color' => (string) $c['branding']['accent_color'],
                 'background_color' => (string) $c['branding']['background_color'],
-                'show_rule_id' => (bool) ($c['branding']['show_rule_id'] ?? true),
+                'show_rule_id' => (bool) ($c['branding']['show_rule_id'] ?? false),
             ],
             botMode: (string) $c['bots']['mode'],
             knownBotAgents: array_values(array_map('strval', $c['bots']['known_agents'])),
@@ -299,6 +330,9 @@ final class ShieldConfig
             scannerUaSignal: (int) ($c['behavior']['scanner_ua_signal'] ?? 4),
             bodyInspectionEnabled: (bool) ($c['inspection']['body']['enabled'] ?? true),
             bodyInspectionMaxBytes: (int) ($c['inspection']['body']['max_bytes'] ?? 65536),
+            skipPaths: self::normalizePathPrefixes($c['rules']['skip_paths'] ?? []),
+            apiPaths: self::normalizePathPrefixes($c['api']['paths'] ?? []),
+            apiDetectAccept: (bool) ($c['api']['detect_accept'] ?? true),
         );
     }
 
@@ -344,6 +378,19 @@ final class ShieldConfig
     }
 
     /**
+     * Trims path prefix lists so surrounding whitespace cannot silently change
+     * which requests match. assertValid() has already rejected empty, root and
+     * query-string entries by the time this runs.
+     *
+     * @param  array<mixed>  $paths
+     * @return list<string>
+     */
+    private static function normalizePathPrefixes(array $paths): array
+    {
+        return array_values(array_map('trim', array_map('strval', $paths)));
+    }
+
+    /**
      * @param  array<string, mixed>  $c
      */
     private static function assertValid(array $c): void
@@ -356,6 +403,12 @@ final class ShieldConfig
         }
         if (! in_array($c['bots']['mode'], ['off', 'observe', 'challenge'], true)) {
             throw new InvalidConfigException('Invalid bots.mode: '.$c['bots']['mode']);
+        }
+        if (! in_array($c['logging']['level'] ?? self::LOG_SUSPICIOUS, [self::LOG_ALL, self::LOG_SUSPICIOUS, self::LOG_BLOCKED], true)) {
+            throw new InvalidConfigException(
+                'Invalid logging.level: '.(string) ($c['logging']['level'] ?? '')
+                .'. Expected one of: all, suspicious, blocked.',
+            );
         }
         if ((int) $c['behavior']['path_rate_limit'] < 1 || (int) $c['behavior']['sensitive_path_rate_limit'] < 1) {
             throw new InvalidConfigException('Path rate limits must be positive integers.');
@@ -385,23 +438,41 @@ final class ShieldConfig
         if ((int) ($c['inspection']['body']['max_bytes'] ?? 65536) < 1024) {
             throw new InvalidConfigException('inspection.body.max_bytes must be at least 1024.');
         }
-        foreach ($c['allowlist']['paths'] as $path) {
+        self::assertPathPrefixes($c['allowlist']['paths'], 'allowlist.paths', 'allowlist every request');
+        self::assertPathPrefixes(
+            $c['rules']['skip_paths'] ?? [],
+            'rules.skip_paths',
+            'skip body and behaviour inspection for every request',
+        );
+        self::assertPathPrefixes($c['api']['paths'] ?? [], 'api.paths', 'return JSON for every request');
+    }
+
+    /**
+     * Shared validation for every path-prefix list. The allowlist is stricter
+     * because a root prefix there would exempt the whole site, while
+     * skip_paths/api.paths only widen behaviour on a narrow scope.
+     *
+     * @param  array<mixed>  $paths
+     */
+    private static function assertPathPrefixes(array $paths, string $key, string $consequence): void
+    {
+        foreach ($paths as $path) {
             $trimmed = trim((string) $path);
-            if ($trimmed === '/' || $trimmed === '') {
+            if ($trimmed === '' || $trimmed === '/') {
                 throw new InvalidConfigException(
-                    'allowlist.paths must be specific path prefixes starting with "/". '
-                    .'The value "'.$trimmed.'" would allowlist every request. '
+                    $key.' must be specific path prefixes starting with "/". '
+                    .'The value "'.$trimmed.'" would '.$consequence.'. '
                     .'To allowlist a whole host use allowlist.hosts or allowlist.ips instead.',
                 );
             }
             if (! str_starts_with($trimmed, '/')) {
                 throw new InvalidConfigException(
-                    'allowlist.paths entries must start with "/", got "'.$trimmed.'".',
+                    $key.' entries must start with "/", got "'.$trimmed.'".',
                 );
             }
             if (str_contains($trimmed, '?')) {
                 throw new InvalidConfigException(
-                    'allowlist.paths entries must not contain a query string, got "'.$trimmed.'".',
+                    $key.' entries must not contain a query string, got "'.$trimmed.'".',
                 );
             }
         }

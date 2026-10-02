@@ -4,7 +4,14 @@ Semua perubahan penting `ganadev/shield-core` didokumentasikan di sini. Format m
 [Keep a Changelog](https://keepachangelog.com/) dan proyek ini mematuhi
 [Semantic Versioning](https://semver.org/).
 
-## [1.1.0 - 2026-10-01]
+## [1.2.0 - 2026-10-01]
+
+Nomor `1.1.0` dilewati: rilis itu disiapkan tapi tidak pernah diberi tag Git, jadi tidak pernah terbit dan tidak
+ada versi yang perlu di-deprecate.
+
+Rilis ini menutup sebelas temuan audit internal. Semuanya bersifat aditif atau
+pengetatan default, tidak ada perubahan pada threshold global maupun semantik
+signature.
 
 ### Changed
 
@@ -21,6 +28,35 @@ Semua perubahan penting `ganadev/shield-core` didokumentasikan di sini. Format m
 
   Yang berubah: crawler tak terverifikasi sekarang dilayani dan hanya dicatat
   (`SIGNAL_UNVERIFIED_CRAWLER_CLAIM` tetap masuk skor), bukan di-challenge.
+- **`logging.events` (boolean) diganti `logging.level` (string).** Recorder
+  sebelumnya menulis **setiap request** ke `security_events`, sehingga tabel tumbuh
+  tanpa batas dan baris yang justru dibutuhkan untuk menyetel ambang batas ikut
+  tenggelam. `ShieldConfig::$logEvents` (bool) menjadi `$loggingLevel` (string) dengan
+  konstanta `LOG_ALL`, `LOG_SUSPICIOUS`, dan `LOG_BLOCKED`.
+
+  | Level | Yang disimpan |
+  | --- | --- |
+  | `suspicious` (default) | Semua keputusan selain `ALLOW`. |
+  | `blocked` | Hanya blokir dan ban sementara. |
+  | `all` | Setiap request, termasuk yang diizinkan. Untuk debugging singkat. |
+
+  Nilai di luar tiga itu ditolak saat boot dengan `InvalidConfigException`.
+  **Catatan upgrade:** file config yang sudah di-publish tidak ikut berubah, sehingga
+  `'events' => true` diabaikan dan `level` jatuh ke default `suspicious`. Tambahkan
+  `'level' => 'all'` eksplisit bila Anda memang mengandalkan pencatatan tiap request.
+- **Default `branding.show_rule_id` `true` menjadi `false`.** Config bawaan core dan
+  default adapter/page renderer ikut menyesuaikan, sehingga halaman blokir tidak lagi
+  membuka detail signature ke penyerang. Header `X-Shield-Blocked` tetap membawa rule id
+  karena itu sinyal operator.
+- **`bots.mode=observe` tidak lagi bisa di-eskalasi oleh sinyal perilaku.** Selama ini
+  `observe` hanya mencegah challenge yang dipaksakan, bukan challenge berbasis skor.
+  Crawl deras (`unique_uri_burst` +12) memakai UA bot gagal terverifikasi menghasilkan
+  skor 16, dan selama `mode` global `challenge`/`enforce` crawler itu tetap
+  di-challenge — hilang dari indeks tanpa penyerang yang terlihat.
+
+  Sekarang klaim crawler yang gagal diverifikasi tidak dapat menaikkan verdict ke
+  challenge atau ban atas infrastruktur perilaku saja. Yang tetap ditegakkan: signature
+  yang cocok (termasuk critical) dan ban aktif yang sudah tercatat.
 
 ### Ditambahkan
 
@@ -30,6 +66,26 @@ Semua perubahan penting `ganadev/shield-core` didokumentasikan di sini. Format m
   seluruh proteksi secara senyap. Entri juga harus diawali `/` dan bebas query string.
   Host/IP/paths kini di-trim agar whitespace tidak mengubah apa yang ter-allowlist.
   Critical signature tetap tidak bisa di-bypass (guard `hasCriticalMatch`).
+- **`rules.skip_paths`.** Daftar prefix path yang menonaktifkan pemindaian body dan
+  penilaian perilaku, dipakai untuk mengurangi false positive pada rich text editor,
+  webhook, dan traffic M2M/NAT yang berbagi satu IP. Signature pada URI tetap aktif,
+  dan critical signature tidak pernah di-bypass. Path divalidasi dengan aturan yang
+  sama seperti `allowlist.paths` (leading `/`, tanpa query string).
+- **Dukungan klien API/M2M pada config.** `api.paths` dan `api.detect_accept` dibawa
+  ke core sebagai metadata keputusan supaya adapter dapat memilih bentuk respons tanpa
+  menebak-nebak. Default core `api.paths` adalah `[]` (tidak ada path yang dianggap
+  API) dan `api.detect_accept` `true` menghormati negosiasi `Accept`, sehingga aplikasi
+  yang hanya berisi browser tidak ikut terpengaruh.
+- **`logging.bypass_events` kini dipetakan di core.** Sebelumnya hanya ada sebagai
+  default internal dan tidak pernah diekspos lewat `fromArray()`.
+
+### Diperbaiki
+
+- **Daftar prefix path di-trim.** `skip_paths` dan `api.paths` kini melewati normalisasi
+  yang sama seperti `allowlist.paths`, jadi whitespace di sekitar entri tidak lagi
+  mengubah path mana yang cocok. Entri tanpa leading `/` tetap ditolak saat boot.
+- **Perbandingan logging level** kini berbasis konstanta `ShieldConfig::LOG_*`, bukan
+  string literal yang tersebar di beberapa tempat.
 
 ## [1.0.1 - 2026-10-01]
 

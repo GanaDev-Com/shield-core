@@ -4,6 +4,29 @@ Semua perubahan penting `ganadev/shield-core` didokumentasikan di sini. Format m
 [Keep a Changelog](https://keepachangelog.com/) dan proyek ini mematuhi
 [Semantic Versioning](https://semver.org/).
 
+## [1.2.2 - 2026-10-02]
+
+Rilis packaging untuk mengembalikan `1.2.1` kekeadaan yang bisa diinstal.
+
+### Fixed
+
+- **`1.2.1` ditarik dari metadata Packagist.** Tag `v1.2.1` sempat dipindahkan
+  setelah Packagist mengindeksnya. Packagist memblokir re-tag tersebut dan
+  menghapus versi itu dari metadata, sehingga
+  `composer require ganadev/shield-core:^1.2.1` gagal dengan
+  `found ... [dev-main, v1.0.0, v1.0.1, v1.2.0] but it does not match the constraint`.
+  Halaman HTML di Packagist masih menampilkan `1.2.1`, tetapi Composer tidak
+  pernah menerimanya.
+
+### Notes
+
+- **Tidak ada perubahan kode.** Isi tag `v1.2.2` identik dengan `v1.2.1` pada
+  commit `fc67f66`, jadi perbedaannya hanya `CHANGELOG.md`. Naik ke `1.2.2`
+  aman tanpa perubahan perilaku.
+- Yang sempat memasang `1.2.1` selama jendela ketika versinya masih tersedia
+  (sejak `2026-10-02 02:48 UTC`) cukup menjalankan
+  `composer require ganadev/shield-core:^1.2.2`.
+
 ## [1.2.1 - 2026-10-02]
 
 Rilis ini menutup sepuluh temuan audit internal. Semuanya bersifat aditif atau

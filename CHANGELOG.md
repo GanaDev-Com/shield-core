@@ -4,30 +4,14 @@ Semua perubahan penting `ganadev/shield-core` didokumentasikan di sini. Format m
 [Keep a Changelog](https://keepachangelog.com/) dan proyek ini mematuhi
 [Semantic Versioning](https://semver.org/).
 
-## [1.2.0 - 2026-10-01]
+## [1.2.1 - 2026-10-02]
 
-Nomor `1.1.0` dilewati: rilis itu disiapkan tapi tidak pernah diberi tag Git, jadi tidak pernah terbit dan tidak
-ada versi yang perlu di-deprecate.
-
-Rilis ini menutup sebelas temuan audit internal. Semuanya bersifat aditif atau
+Rilis ini menutup sepuluh temuan audit internal. Semuanya bersifat aditif atau
 pengetatan default, tidak ada perubahan pada threshold global maupun semantik
 signature.
 
 ### Changed
 
-- **Default `bots.mode` berubah dari `challenge` menjadi `observe`.** Default sebelumnya
-  bisa merusak SEO/AI-crawler: begitu reverse-DNS atau CIDR gagal — DNS bermasalah,
-  resolver diblokir, atau domain crawler belum terdaftar — crawler resmi diklaim palsu
-  lalu mendapat `403/419`, padahal `/robots.txt` dan `/sitemap.xml` harus selalu bisa
-  diakses. `mode` global sudah `observe` sejak awal, jadi ini juga menyelaraskan
-  `bots.mode` dengan falsafah dan dokumentasi package.
-
-  Perilaku opt-in tetap tersedia: set `bots.mode` ke `challenge` untuk mengembalikan
-  challenge pada crawler tak terverifikasi. Naikkan hanya setelah verifikasi crawler
-  terbukti bekerja, karena kegagalan DNS akan menandai crawler sah sebagai palsu.
-
-  Yang berubah: crawler tak terverifikasi sekarang dilayani dan hanya dicatat
-  (`SIGNAL_UNVERIFIED_CRAWLER_CLAIM` tetap masuk skor), bukan di-challenge.
 - **`logging.events` (boolean) diganti `logging.level` (string).** Recorder
   sebelumnya menulis **setiap request** ke `security_events`, sehingga tabel tumbuh
   tanpa batas dan baris yang justru dibutuhkan untuk menyetel ambang batas ikut
@@ -60,12 +44,6 @@ signature.
 
 ### Ditambahkan
 
-- **Validasi `allowlist.paths`.** Nilai `''` dan `'/'` ditolak saat boot dengan
-  `InvalidConfigException`. Keduanya membuat **seluruh request ter-allowlist** karena
-  pencocokan memakai `str_starts_with()`, jadi satu karakter salah tulis mematikan
-  seluruh proteksi secara senyap. Entri juga harus diawali `/` dan bebas query string.
-  Host/IP/paths kini di-trim agar whitespace tidak mengubah apa yang ter-allowlist.
-  Critical signature tetap tidak bisa di-bypass (guard `hasCriticalMatch`).
 - **`rules.skip_paths`.** Daftar prefix path yang menonaktifkan pemindaian body dan
   penilaian perilaku, dipakai untuk mengurangi false positive pada rich text editor,
   webhook, dan traffic M2M/NAT yang berbagi satu IP. Signature pada URI tetap aktif,
@@ -86,6 +64,39 @@ signature.
   mengubah path mana yang cocok. Entri tanpa leading `/` tetap ditolak saat boot.
 - **Perbandingan logging level** kini berbasis konstanta `ShieldConfig::LOG_*`, bukan
   string literal yang tersebar di beberapa tempat.
+
+## [1.2.0 - 2026-10-01]
+
+Nomor `1.1.0` dilewati: rilis itu disiapkan tapi tidak pernah diberi tag Git, jadi tidak pernah terbit dan tidak
+ada versi yang perlu di-deprecate.
+
+Perubahan pada rilis ini seluruhnya bersifat aditif: tidak ada threshold global maupun semantik signature yang
+berubah.
+
+### Changed
+
+- **Default `bots.mode` berubah dari `challenge` menjadi `observe`.** Default sebelumnya
+  bisa merusak SEO/AI-crawler: begitu reverse-DNS atau CIDR gagal — DNS bermasalah,
+  resolver diblokir, atau domain crawler belum terdaftar — crawler resmi diklaim palsu
+  lalu mendapat `403/419`, padahal `/robots.txt` dan `/sitemap.xml` harus selalu bisa
+  diakses. `mode` global sudah `observe` sejak awal, jadi ini juga menyelaraskan
+  `bots.mode` dengan falsafah dan dokumentasi package.
+
+  Perilaku opt-in tetap tersedia: set `bots.mode` ke `challenge` untuk mengembalikan
+  challenge pada crawler tak terverifikasi. Naikkan hanya setelah verifikasi crawler
+  terbukti bekerja, karena kegagalan DNS akan menandai crawler sah sebagai palsu.
+
+  Yang berubah: crawler tak terverifikasi sekarang dilayani dan hanya dicatat
+  (`SIGNAL_UNVERIFIED_CRAWLER_CLAIM` tetap masuk skor), bukan di-challenge.
+
+### Ditambahkan
+
+- **Validasi `allowlist.paths`.** Nilai `''` dan `'/'` ditolak saat boot dengan
+  `InvalidConfigException`. Keduanya membuat **seluruh request ter-allowlist** karena
+  pencocokan memakai `str_starts_with()`, jadi satu karakter salah tulis mematikan
+  seluruh proteksi secara senyap. Entri juga harus diawali `/` dan bebas query string.
+  Host/IP/paths kini di-trim agar whitespace tidak mengubah apa yang ter-allowlist.
+  Critical signature tetap tidak bisa di-bypass (guard `hasCriticalMatch`).
 
 ## [1.0.1 - 2026-10-01]
 
